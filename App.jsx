@@ -44,11 +44,9 @@ function App(): React.JSX.Element {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-          }}></View>
-        <View style={[styles.headerContainer, styles.header]}>
+        <View style={styles.header}
+          >
+        <View style={styles.headerContainer}>
           <View>
             <Text style={{ ...styles.headerText }}>Hi,Dias Hewan</Text>
             <Text style={{ ...styles.headerText, fontSize: 20 }}>
@@ -65,6 +63,8 @@ function App(): React.JSX.Element {
             />
           </View>
 
+
+        </View>
         </View>
         <View style={styles.contentContainer}>
           <View style={styles.wrapper}>
@@ -99,23 +99,20 @@ const styles = StyleSheet.create({
   },
 
   headerContainer: {
-    flex: 1,
+  display : 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 5,
+    padding: 15,
+    alignItems : "center",
   },
 
   headerText: {
     color: Colors.lighter,
-    marginTop: 10,
-    marginLeft: 10,
     fontWeight: 800,
   },
 
   imageSetting: {
     borderRadius: 30,
-    marginTop: 15,
-    marginRight: 10,
   },
 
   contentContainer: {
