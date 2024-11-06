@@ -10,8 +10,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "install": "^0.13.0",
     "react": "18.3.1",
-    "react-native": "0.76.1"
+    "react-native": "0.76.1",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
