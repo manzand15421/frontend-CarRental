@@ -5,24 +5,28 @@
  * @format
  */
 
-import React from 'react';
+// import { Link, Navigate, useNavigate } from 'react-router-dom';
+// import { useDispatch, useSelector } from 'react-redux';
+// import { AppDispatch, RootState } from '../../config/store';
+// import { postSignIn } from '../../config/reducer/auth/signInSlice';
+
+import React, {useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
   View,
 } from 'react-native';
-
+import axios from 'axios';
 import Button from './src/components/Button';
 import Icon from 'react-native-vector-icons/Feather';
 import CarList from './src/components/Carlist';
 
-const Colors = { 
+const Colors = {
   primary: '#A43333',
   secondary: '#SCB85F',
   darker: '#121212',
@@ -32,18 +36,21 @@ const Colors = {
 
 const CARS = [
   {
+    id: 1,
     name: 'Innova Zenix',
     image:
       'https://medias.auto2000.co.id/sys-master-hybrismedia/h1b/h8a/8846828240926/Thumbnail_Black_Zenix.png',
     price: 230000,
   },
   {
+    id: 2,
     name: 'Yaris',
     image:
       'https://medias.auto2000.co.id/sys-master-hybrismedia/h05/h86/8846786625566/4-black-+-super-white-ii_optimized.png',
     price: 150000,
   },
   {
+    id: 3,
     name: 'Yaris',
     image:
       'https://medias.auto2000.co.id/sys-master-hybrismedia/h05/h86/8846786625566/4-black-+-super-white-ii_optimized.png',
@@ -62,130 +69,132 @@ const ButtonIcon = ({icon, title}) => (
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
-
+  const [cars, setCars] = useState([]);
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  // console.log('DATA CARS', cars);
 
-  return (
+  useEffect(() => {
+   
+    const FetchCars = async () => {
+      try {
+        const response = await axios.get(
+          'https://pregnant-tiff-neslite-e2cb15a7.koyeb.app/api/v1/cars',
+        );
+        setCars(response.data.data);
+      } catch (e) {
+        console.e('fetch data error', e);
+      }
+    };
+    FetchCars();
+  }, []);
+
+ return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+        backgroundColor={Colors.primary}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <View style={styles.header}>
-          <View style={styles.headerContainer}>
-            <View>
-              <Text style={{...styles.headerText}}>Hi,Dias Hewan</Text>
-              <Text style={{...styles.headerText, fontSize: 20}}>
-                From Tegal Company
-              </Text>
+      {/* end banner */}
+      <FlatList
+        data={cars}
+        ListHeaderComponent={
+          <>
+            <View style={styles.header}>
+              <View style={styles.headerContainer}>
+                <View>
+                  <Text style={styles.headerText}>Hi, Dias Hewan</Text>
+                  <Text style={styles.headerTextLocation}> From Tegal Company</Text>
+                </View>
+                <View >
+                  <Image style={styles.imageRounded} source={{ uri: "https://i.pravatar.cc/100" }} width={50} height={50} />
+                </View>
+              </View>
+              {/* banner */}
+              <View style={{
+                ...styles.headerContainer,
+                ...styles.bannerContainer
+              }}>
+                <View style={styles.bannerDesc}>
+                  <Text style={styles.bannerText}>Sewa Mobil Berkualitas di kawasanmu</Text>
+                  <Button
+                    color={Colors.secondary}
+                    title='Sewa Mobil'
+                  />
+                </View>
+                <View style={styles.bannerImage}>
+                  <Image source={require('./assets/img_car.png')} width={50} height={50} />
+                </View>
+              </View>
             </View>
-
-            <View>
-              <Image
-                source={{uri: 'https://i.pravatar.cc/100'}}
-                width={45}
-                height={45}
-                style={styles.imageSetting}
-              />
+            <View style={styles.iconContainer}>
+              <ButtonIcon icon="truck" title="Sewa Mobil" />
+              <ButtonIcon icon="box" title="Oleh-Oleh" />
+              <ButtonIcon icon="key" title="Penginapan" />
+              <ButtonIcon icon="camera" title="Wisata" />
             </View>
-          </View>
-        </View>
-        <View style={styles.contentContainer}>
-          <View style={styles.wrapper}>
-            <Text style={styles.contentText}>
-              Sewa Mobil Berkualitas di kawasanmu
-            </Text>
-            <Button color={Colors.button} title="Sewa Mobil" />
-          </View>
-      
-          <Image
-            source={require('./assets/img_car.png')}
-            style={styles.imageCar}
+          </>
+        }
+        renderItem={({ item, index }) =>
+          <CarList
+            key={item.toString()}
+            image={{ uri: item.image }}
+            carName={item.name}
+            passengers={5}
+            baggage={4}
+            price={item.price}
           />
-          
-        </View>
-        <View style={styles.iconContainer}>
-          <ButtonIcon icon="truck" title="Sewa Mobil"/>
-          <ButtonIcon icon="box" title="Oleh-Oleh"/>
-          <ButtonIcon icon="key" title="Penginapan"/>
-          <ButtonIcon icon="camera" title="Wisata"/>
-        </View>
-        {/* end banner */}
-        <FlatList
-          data={CARS}
-          renderItem={({item}) => 
-            <CarList
-              key={item.id}
-              image={{ uri: item.image }}
-              carName={item.name}
-              passengers={5}
-              baggage={4}
-              price={item.price}
-            />
-          }
-          keyExtractor={item => item.id}
-        />
-      </ScrollView>
+        }
+        keyExtractor={item => item.id}
+      />
     </SafeAreaView>
   );
 }
 
+
 const styles = StyleSheet.create({
   header: {
     backgroundColor: Colors.primary,
-    height: 176,
+    height: 130,
   },
-
   headerContainer: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 15,
-    alignItems: 'center',
+    justifyContent: 'space-between', // posisi horizontal
+    alignItems: 'center', // posisi
+    padding: 10
   },
-
+  imageRounded: {
+    borderRadius: 40,
+  },
   headerText: {
     color: Colors.lighter,
-    fontWeight: 800,
+    fontWeight: 700,
+    fontSize: 12
   },
-
-  imageSetting: {
-    borderRadius: 30,
-  },
-
-  contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#AF392F',
-    margin: 10,
-    marginTop: -76,
-    borderRadius: 10,
-    alignItems: 'center',
-    height: 160,
-  },
-
-  contentText: {
+  headerTextLocation: {
     color: Colors.lighter,
-    fontWeight: 400,
-    fontSize: 25,
-    lineHeight: 35,
+    fontWeight: 700,
+    fontSize: 14
   },
-
-  wrapper: {
-    width: '40%',
+  bannerContainer: {
+    borderRadius: 4,
+    padding: 0,
+    backgroundColor: '#AF392F',
+    marginHorizontal: 10,
+    flexWrap: 'wrap',
+    marginBottom: -200
+  },
+  bannerText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: Colors.lighter,
+  },
+  bannerDesc: {
     paddingHorizontal: 10,
+    width: '40%'
   },
-  imageCar: {
-  width: '60%',
-   height : '100%',
-   borderRadius : 10,
-  },
-
   iconContainer: {
     marginTop: 75,
     flexDirection: 'row',
@@ -194,35 +203,17 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     backgroundColor: Colors.primary,
-    borderRadius:5,
+    borderRadius: 5,
     padding: 15
   },
-  iconText:{
-    color:'#fff',
+  iconText: {
+    color: '#fff',
     fontSize: 12,
     fontWeight: 700,
     minWidth: 65,
     marginTop: 5,
-    textAlign:'center'
+    textAlign: 'center'
   }
-  // ButtonStyle : {
-  //   marginTop : 10,
-  //   backgroundColor : "#5CB85F",
-  //   padding : 5,
-  //   borderRadius : 5,
-  //   alignItems: 'center',
-  //   width : 140,
-  //   height : 40,
-  //   marginLeft : 10,
-  // },
-
-  // ButtonText : {
-  //   color : Colors.lighter,
-  //   fontSize : 20,
-  //   fontWeight : 900,
-  //   padding : 3
-
-  // }
 });
 
 export default App;
