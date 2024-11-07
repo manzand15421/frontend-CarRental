@@ -1,14 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
 
-// import { Link, Navigate, useNavigate } from 'react-router-dom';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { AppDispatch, RootState } from '../../config/store';
-// import { postSignIn } from '../../config/reducer/auth/signInSlice';
 
 import React, {useEffect, useState} from 'react';
 import {
