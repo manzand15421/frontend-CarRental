@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 import Icon from 'react-native-vector-icons/Feather';
 import Button from "./Button";
 import { Row, Col } from "./Grid";
-import { formatCurrency } from "../utils/formatCurrency";
+import { formatCurrency } from "../utils/formafCurrency";
 import { useColorScheme } from "react-native";
 
 export default function CarList({
@@ -63,8 +63,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginVertical: 10,
     marginHorizontal: 12,
-    alignItems: 'flex-start',
-
+    alignItems: 'flex-start'
   },
   img: {
     width: 80,
