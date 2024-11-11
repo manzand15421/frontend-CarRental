@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,45 +6,49 @@ import {
   Image,
   TextInput,
   useWindowDimensions,
-  Alert
+  Alert,
 } from 'react-native';
 import Button from '../components/Button';
-import {Link} from '@react-navigation/native';
+import {Link, useNavigation} from '@react-navigation/native';
 import axios from 'axios';
 
-
-
 function SignUp() {
-    const [fullname,setName] = useState('')
-    const [email,setEmail] = useState('')
-    const [password,setPassword] = useState('')
+  const [fullname, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigation = useNavigation();
 
   const handleRegister = async () => {
-    try {  
-        const data = {
-        email : email,
-        password : password,
+    if (!email || !password) {
+      Alert.alert('Form Required !!');
+      return;
     }
-    const response = await axios.post('https://pregnant-tiff-neslite-e2cb15a7.koyeb.app/api/v1//auth/signup',
-        data)
-        console.log("data nya",response.data)
-        Alert.alert('Registrasi Berhasil', 'Akun Anda berhasil dibuat!', [
-            { text: 'OK' },
-          ]);
-        
-}
+    try {
+      const data = {
+        email: email,
+        password: password,
+      };
+      const response = await axios.post(
+        'http://192.168.1.35:3000/api/v1//auth/signup',
+        data,
+      );
+      // console.log("data nya",response.data)
+      Alert.alert('Registrasi Berhasil', 'Akun Anda berhasil dibuat!', [
+        {text: 'OK'},
+      ]);
 
-catch (error) {
-            // Check if there's a response from the server
-            const errorMessage =
-                error.response && error.response.data && error.response.data.message
-                    ? error.response.data.message
-                    : 'Terjadi kesalahan, coba lagi nanti.';
-            Alert.alert('Registrasi Gagal', errorMessage, [{ text: 'OK' }]);
-            console.error("Error during sign up:", error.response ? error.response.data : error.message);
-        }
-    
-  }
+      if (response.status === 200) {
+        navigation.navigate('SignIn');
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : 'Terjadi kesalahan, coba lagi nanti.';
+      Alert.alert('Registrasi Gagal', errorMessage, [{text: 'OK'}]);
+      console.log(errorMessage);
+    }
+  };
   return (
     <View>
       <View style={styles.titleWrapper}>
@@ -55,32 +59,32 @@ catch (error) {
         <Text style={styles.title}>Sign Up</Text>
       </View>
       <View style={styles.formContainer}>
-            <View>
-            <Text style={styles.formText}>Name*</Text>
-            <TextInput  
-                placeholder=" Full Name"
-                placeholderTextColor={'#A5A5A5'}
-                style={styles.formInput}
-                value={fullname}
-                onChange={(event) => {
-                    const text = event.nativeEvent.text;
-                    setName(text);
-                    console.log('Text changed:', text);
-                  }}/>
-                
-            </View>
+        <View>
+          <Text style={styles.formText}>Name*</Text>
+          <TextInput
+            placeholder=" Full Name"
+            placeholderTextColor={'#A5A5A5'}
+            style={styles.formInput}
+            value={fullname}
+            onChange={event => {
+              const text = event.nativeEvent.text;
+              setName(text);
+              console.log('Text changed:', text);
+            }}
+          />
+        </View>
         <View>
           <Text style={styles.formText}>Email*</Text>
           <TextInput
             placeholder="Contoh : john_doe123@gmail.com"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-             value={email}
-             onChange={(event) => {
-                const text = event.nativeEvent.text;
-                setEmail(text);
-                console.log('Text changed:', text); 
-              }}
+            value={email}
+            onChange={event => {
+              const text = event.nativeEvent.text;
+              setEmail(text);
+              console.log('Text changed:', text);
+            }}
           />
         </View>
 
@@ -92,11 +96,12 @@ catch (error) {
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
             value={password}
-            onChange={(event) => {
-                const text = event.nativeEvent.text;
-                setPassword(text);
-                console.log('Text changed:', text); 
-              }}/>
+            onChange={event => {
+              const text = event.nativeEvent.text;
+              setPassword(text);
+              console.log('Text changed:', text);
+            }}
+          />
         </View>
       </View>
 
@@ -109,18 +114,15 @@ catch (error) {
 
       <View>
         <Text style={styles.message}>
-          Already have an account?{' '}
+          Already have an account? {''}
           <Link style={styles.link} screen={'SignIn'}>
-            Sign In
+            Sign In Account
           </Link>
         </Text>
       </View>
     </View>
-    
   );
 }
-
-
 
 const styles = StyleSheet.create({
   title: {
@@ -164,9 +166,10 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     fontWeight: 700,
   },
-  ButtonContainer : {
-    alignSelf : 'center'
-  }
+  ButtonContainer: {
+    alignSelf: 'center',
+    width: '90%',
+  },
 });
 
 export default SignUp;

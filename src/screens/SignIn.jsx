@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useReducer, useState} from 'react';
 import {
   View,
   Text,
@@ -10,35 +10,50 @@ import {
 } from 'react-native';
 import Button from '../components/Button';
 import {Link, useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 function SignUp() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('wiwin54@gmail.com');
+  const [password, setPassword] = useState('@Slamet123');
+
   const navigation = useNavigation();
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('email or password required');
+      return;
+    }
+
     try {
-      const data = {
+      const user = {
         email: email,
         password: password,
       };
       const response = await axios.post(
-        'https://pregnant-tiff-neslite-e2cb15a7.koyeb.app/api/v1//auth/signin',
-        data,
+        'http://192.168.1.35:3000/api/v1/auth/signin',
+        user,
       );
-      console.log('data nya', response.data);
-      navigation.navigate('Home')
-      Alert.alert(
-        'Login Berhasil', 
-        'Akun Anda berhasil login!', 
-        [
-          {
-            text: 'OK', 
-            onPress: () => navigation.navigate('homeTabs') 
-          }
-        ]
+      //Untuk async storage ( menyimpan data )
+      const {data} = response.data;
+      await AsyncStorage.setItem('token', JSON.stringify(data.token));
+      await AsyncStorage.setItem(
+        'users',
+        JSON.stringify({
+          email: data.user.email,
+        }),
       );
+      navigation.navigate('homeTabs');
+      // Alert.alert(
+      //   'Login Berhasil',
+      //   'Akun Anda berhasil login!',
+      //   [
+      //     {
+      //       text: 'OK',
+      //       onPress: () => navigation.navigate('homeTabs')
+      //     }
+      //   ]
+      // );
     } catch (error) {
       const errorMessage =
         error.response && error.response.data && error.response.data.message
@@ -86,7 +101,6 @@ function SignUp() {
             onChange={event => {
               const text = event.nativeEvent.text;
               setPassword(text);
-              
             }}
           />
         </View>
@@ -103,7 +117,7 @@ function SignUp() {
         <Text style={styles.message}>
           Dont have any account?{' '}
           <Link style={styles.link} screen={'SignUp'}>
-            Sign Up
+            Sign Up For Free
           </Link>
         </Text>
       </View>
@@ -154,7 +168,7 @@ const styles = StyleSheet.create({
     fontWeight: 700,
   },
   ButtonContainer: {
-    width: '30%',
+    width: '90%',
     alignSelf: 'center',
   },
 });
