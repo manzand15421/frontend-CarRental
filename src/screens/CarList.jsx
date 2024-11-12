@@ -14,6 +14,7 @@ import axios from 'axios';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 const Colors = {
   primary: '#A43333',
@@ -61,15 +62,14 @@ const CarPage = () => {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  const navigation = useNavigation();
   const [car, setCar] = useState([]);
-  const [login,setLogin] = useState(false)
-  const [user,setUser] = useState(null)
-  const getUser = async () =>{
-    const user = setUser(await AsyncStorage.getItem('users'))
-    const token = await AsyncStorage.getItem('token')
-    if(user && token)
-      setLogin(true)
-  }
+  const [user, setUser] = useState(null);
+
+  const getUser = async () => {
+    const user = setUser(await AsyncStorage.getItem('users'));
+    const token = await AsyncStorage.getItem('token');
+  };
 
   const getCars = async () => {
     try {
@@ -85,9 +85,10 @@ const CarPage = () => {
 
   useFocusEffect(() => {
     getUser();
-    if(!user) {
-    setCar('');}
-  }); 
+    if (!user) {
+      setCar('');
+    }
+  });
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -106,6 +107,7 @@ const CarPage = () => {
             passengers={5}
             baggage={4}
             price={item.price}
+            onPress={() => navigation.navigate('carDetail', {carId: item.id})}
           />
         )}
         keyExtractor={item => item.id}

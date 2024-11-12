@@ -1,71 +1,69 @@
 import React, {useEffect, useReducer, useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TextInput,
-  useWindowDimensions,
-  Alert,
-} from 'react-native';
+import {View, Text, StyleSheet, Image, TextInput, Alert} from 'react-native';
+
+import Icon from 'react-native-vector-icons/Feather';
 import Button from '../components/Button';
 import {Link, useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import ModalPopup from '../components/Modal';
 
+const initialFormState = {
+  email: 'tegalcorporate@gmail.com',
+  password: '@Slamet123',
+};
 function SignUp() {
-  const [email, setEmail] = useState('wiwin54@gmail.com');
-  const [password, setPassword] = useState('@Slamet123');
+  // const [email, setEmail] = useState('wiwin54@gmail.com');
+  // const [password, setPassword] = useState('@Slamet13');
+  const [formData, setFormData] = useState(initialFormState);
+  const [modalVisibile, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const navigation = useNavigation();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('email or password required');
-      return;
-    }
+  const handleChange = (val, name) => {
+    setFormData({
+      ...formData, //agar value bisa dimodify (hooknya)
+      [name]: val, //(dispatch nya)
+    });
+  };
 
+  const handleLogin = async () => {
     try {
-      const user = {
-        email: email,
-        password: password,
-      };
       const response = await axios.post(
         'http://192.168.1.35:3000/api/v1/auth/signin',
-        user,
+        formData,
       );
+
       //Untuk async storage ( menyimpan data )
       const {data} = response.data;
       await AsyncStorage.setItem('token', JSON.stringify(data.token));
       await AsyncStorage.setItem(
         'users',
         JSON.stringify({
+          fullname : data.user.fullname,
           email: data.user.email,
         }),
       );
-      navigation.navigate('homeTabs');
-      // Alert.alert(
-      //   'Login Berhasil',
-      //   'Akun Anda berhasil login!',
-      //   [
-      //     {
-      //       text: 'OK',
-      //       onPress: () => navigation.navigate('homeTabs')
-      //     }
-      //   ]
-      // );
+      setModalVisible(true);
+      setErrorMessage(null);
     } catch (error) {
-      const errorMessage =
-        error.response && error.response.data && error.response.data.message
-          ? error.response.data.message
-          : 'Terjadi kesalahan, coba lagi nanti.';
-      Alert.alert('Login Gagal', errorMessage);
-      console.error(
-        'Error Login',
-        error.response ? error.response.data : error.message,
-      );
+      const errorMessage = error.response.data.message;
+      setModalVisible(true);
+      setErrorMessage(errorMessage);
+      console.log(errorMessage);
     }
   };
+
+  useEffect(() => {
+    if (modalVisibile === true) {
+      setTimeout(() => {
+        if (errorMessage === null) navigation.navigate('homeTabs');
+        setModalVisible(false);
+        setFormData(initialFormState);
+      }, 1000);
+    }
+  });
   return (
     <View>
       <View style={styles.titleWrapper}>
@@ -82,11 +80,8 @@ function SignUp() {
             placeholder="Contoh : john_doe123@gmail.com"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-            value={email}
-            onChange={event => {
-              const text = event.nativeEvent.text;
-              setEmail(text);
-            }}
+            value={'tegalcorporate@gmail.com'}
+            onChangeText={text => handleChange(text, 'email')}
           />
         </View>
 
@@ -97,11 +92,8 @@ function SignUp() {
             placeholder="min.8,!@,123,Aa"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-            value={password}
-            onChange={event => {
-              const text = event.nativeEvent.text;
-              setPassword(text);
-            }}
+            value={'@Slamet123'}
+            onChangeText={text => handleChange(text, 'password')}
           />
         </View>
       </View>
@@ -121,6 +113,27 @@ function SignUp() {
           </Link>
         </Text>
       </View>
+      <ModalPopup visible={modalVisibile}>
+        <View style={styles.modalBackground}>
+          {errorMessage !== null ? (
+            <>
+              <Icon size={13} name={'x-circle'} />
+              {Array.isArray(errorMessage) ? (
+                errorMessage.map(e => {
+                  return <Text>{e.message}</Text>;
+                })
+              ) : (
+                <Text> {errorMessage} </Text>
+              )}
+            </>
+          ) : (
+            <>
+              <Icon size={32} name={'check-circle'} />
+              <Text>Berhasil Login</Text>
+            </>
+          )}
+        </View>
+      </ModalPopup>
     </View>
   );
 }
@@ -170,6 +183,13 @@ const styles = StyleSheet.create({
   ButtonContainer: {
     width: '90%',
     alignSelf: 'center',
+  },
+  modalBackground : {
+    width : '90%',
+    backgroundColor : "#fff",
+    elevation : 20,
+    borderRadius : 4,
+    padding : 20,
   },
 });
 

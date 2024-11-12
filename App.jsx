@@ -8,6 +8,8 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import ProfileScreen from './src/screens/Profile';
 import SignIn from './src/screens/SignIn';
 import SignUp from './src/screens/SignUp';
+import carDetail from './src/screens/CarDetail';
+import PaymentScreen from './src/screens/Payment';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -67,6 +69,20 @@ function App() {
           }}
           name="SignUp"
           component={SignUp}
+        />
+         <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name="carDetail"
+          component={carDetail}
+        />
+        <Stack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name="payment"
+          component={PaymentScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -5,50 +5,63 @@ import {
   StyleSheet,
   Image,
   TextInput,
-  useWindowDimensions,
-  Alert,
 } from 'react-native';
 import Button from '../components/Button';
+import Icon from 'react-native-vector-icons/Feather'
 import {Link, useNavigation} from '@react-navigation/native';
 import axios from 'axios';
+import ModalPopup from '../components/Modal';
+
+const initialFormState = {
+  fullname: '',
+  email: '',
+  password: '',
+};
 
 function SignUp() {
-  const [fullname, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // const [fullname, setName] = useState('');
+  // const [email, setEmail] = useState('');
+  // const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState(initialFormState);
+  const [modalVisibile,setModalVisible] = useState(false)
+  const [errorMessage,setErrorMessage] = useState(null)
   const navigation = useNavigation();
 
+  const handleChange = (val, name) => {
+    setFormData({
+      ...formData,
+      [name]: val,
+    });
+  };
+
   const handleRegister = async () => {
-    if (!email || !password) {
-      Alert.alert('Form Required !!');
-      return;
-    }
+
+    
     try {
-      const data = {
-        email: email,
-        password: password,
-      };
       const response = await axios.post(
         'http://192.168.1.35:3000/api/v1//auth/signup',
-        data,
+        formData,
       );
-      // console.log("data nya",response.data)
-      Alert.alert('Registrasi Berhasil', 'Akun Anda berhasil dibuat!', [
-        {text: 'OK'},
-      ]);
-
-      if (response.status === 200) {
-        navigation.navigate('SignIn');
-      }
+     setModalVisible(true)
+     setErrorMessage(null)
     } catch (error) {
-      const errorMessage =
-        error.response && error.response.data && error.response.data.message
-          ? error.response.data.message
-          : 'Terjadi kesalahan, coba lagi nanti.';
-      Alert.alert('Registrasi Gagal', errorMessage, [{text: 'OK'}]);
+      const errorMessage = error.response.data.message
+      setModalVisible(true)
+      setErrorMessage(errorMessage)
+      
       console.log(errorMessage);
     }
   };
+
+  useEffect(() => {
+    if(modalVisibile === true) {
+      setTimeout(() => {
+        if(errorMessage === null ) navigation.navigate("SignIn")
+          setModalVisible(false)
+          setFormData(initialFormState)
+      },1000)
+    }
+  })
   return (
     <View>
       <View style={styles.titleWrapper}>
@@ -65,12 +78,7 @@ function SignUp() {
             placeholder=" Full Name"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-            value={fullname}
-            onChange={event => {
-              const text = event.nativeEvent.text;
-              setName(text);
-              console.log('Text changed:', text);
-            }}
+            onChangeText={text => handleChange(text, 'fullname')}
           />
         </View>
         <View>
@@ -79,12 +87,7 @@ function SignUp() {
             placeholder="Contoh : john_doe123@gmail.com"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-            value={email}
-            onChange={event => {
-              const text = event.nativeEvent.text;
-              setEmail(text);
-              console.log('Text changed:', text);
-            }}
+            onChangeText={text => handleChange(text, 'email')}
           />
         </View>
 
@@ -95,12 +98,7 @@ function SignUp() {
             placeholder="min.8,!@,123,Aa"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-            value={password}
-            onChange={event => {
-              const text = event.nativeEvent.text;
-              setPassword(text);
-              console.log('Text changed:', text);
-            }}
+            onChangeText={text => handleChange(text, 'password')}
           />
         </View>
       </View>
@@ -120,6 +118,27 @@ function SignUp() {
           </Link>
         </Text>
       </View>
+      <ModalPopup visible={modalVisibile}>
+        <View style={styles.modalBackground}>
+          {errorMessage !== null ? (
+            <>
+              <Icon size={13} name={'x-circle'} />
+              {Array.isArray(errorMessage) ? (
+                errorMessage.map(e => {
+                  return <Text>{e.message}</Text>;
+                })
+              ) : (
+                <Text> {errorMessage} </Text>
+              )}
+            </>
+          ) : (
+            <>
+              <Icon size={32} name={'check-circle'} />
+              <Text>Berhasil Login</Text>
+            </>
+          )}
+        </View>
+      </ModalPopup>
     </View>
   );
 }
@@ -169,6 +188,13 @@ const styles = StyleSheet.create({
   ButtonContainer: {
     alignSelf: 'center',
     width: '90%',
+  },
+  modalBackground : {
+    width : '90%',
+    backgroundColor : "#fff",
+    elevation : 20,
+    borderRadius : 4,
+    padding : 20,
   },
 });
 

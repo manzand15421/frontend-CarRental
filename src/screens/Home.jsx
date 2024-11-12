@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -16,6 +16,7 @@ import CarList from '../components/CarList';
 import axios from 'axios';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useNavigation} from '@react-navigation/native';
 
 const COLORS = {
   primary: '#A43333',
@@ -37,6 +38,7 @@ function Home() {
   const [cars, setCars] = useState([]);
   const isDarkMode = useColorScheme() === 'dark';
   const [user, setUser] = useState(null);
+  const navigation = useNavigation();
   // console.log('data',user)
 
   const getUser = async () => {
@@ -46,7 +48,7 @@ function Home() {
 
   const fetchCars = async () => {
     try {
-      const res = aw  ait axios('http://192.168.1.35:3000/api/v1/cars');
+      const res = await axios('http://192.168.1.35:3000/api/v1/cars');
       // console.log(res.data)
       setCars(res.data);
     } catch (e) {
@@ -57,12 +59,16 @@ function Home() {
   useEffect(() => {
     fetchCars();
   }, [user]);
-  useFocusEffect(() => {
-    getUser();
-    if (!user) {
-      setCars('');
-    }
-  });
+
+  useFocusEffect(
+    useCallback(() => {
+      getUser();
+      if (!user) {
+        setCars('');
+      }
+    }, []),
+  );
+
   const backgroundStyle = {
     // overflow: 'visible',
     backgroundColor: isDarkMode ? COLORS.darker : COLORS.lighter,
@@ -84,7 +90,7 @@ function Home() {
                 <View>
                   <Text style={styles.headerText}>
                     Hi,
-                    {user ? user.email : 'Dias Hewan'}
+                    {user ? user.fullname : 'Dias Hewan'}
                   </Text>
                   <Text style={styles.headerTextLocation}>
                     From Tegal Company
@@ -136,6 +142,7 @@ function Home() {
             passengers={5}
             baggage={4}
             price={item.price}
+            onPress={() => navigation.navigate('carDetail', {carId: item.id})}
           />
         )}
         keyExtractor={item => item.id}
