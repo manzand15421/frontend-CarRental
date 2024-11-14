@@ -1,56 +1,44 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Image, ScrollView ,TouchableOpacity,SafeAreaView } from 'react-native';
 import Button from '../components/Button';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Feather';
+import { useSelector, useDispatch } from 'react-redux';
+import { getProfile , selectUser, logout, resetState} from '../redux/reducers/user';
 
 const ProfileScreen = () => {
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
   const [login, setLogin] = useState(false);
   const navigation = useNavigation();
+  const user = useSelector(selectUser)
+  const dispatch = useDispatch()
+  // console.log("state login",user.login)
+  
+// console.log("data user",user.data)
+// console.log("data token",user.token)
 
-  console.log(user)
+
   const handleLogout = async () => {
-     await AsyncStorage.removeItem('token')
-     await AsyncStorage.removeItem('users')
+  dispatch(logout())
+  
+  };
 
-     const token = await AsyncStorage.getItem('token');
-     const userData = await AsyncStorage.getItem('users');
-
-     if (!token && !userData)  {
-      setLogin(false);
-      setUser(null); 
+  const handleRegister =()=> {
+   dispatch(resetState())
+   navigation.navigate('SignUp')
   }
-  };
-useEffect(()=>{
-},[user])
 
-  const getToken = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const userData = await AsyncStorage.getItem('users');
+  const getUser = async () => {
 
-      if (token && userData) {
-        setUser(JSON.parse(userData)); //jadikan object
-        setLogin(true);
-      } 
+    await dispatch(getProfile(user.token))
    
-    } catch (error) {
-      console.log('AsyncStorage error =>', error.message);
-    }
-  };
+  }
 
   useEffect(() => {
-    getToken();
+    getUser()
   }, []);
 
-  const userInfo = {
-    name: "John Doe",
-    email: "johndoe@example.com",
-    phone: "+62 812-3456-7890",
-    memberSince: "January 2023"
-  };
 
   const renderInfoItem = (icon, label,value,) => (
     <View style={styles.infoItem}>
@@ -66,14 +54,14 @@ useEffect(()=>{
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {login && user ? (
+      {user.login ? (
         <ScrollView style={styles.scrollView}>
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.avatarPlaceholder}>
             <Icon name="user" size={40} color="#fff" />
           </View>
-          <Text style={styles.profileName}>{user.fullname}</Text>
+          <Text style={styles.profileName}>{user.data?.fullname}</Text>
           <TouchableOpacity style={styles.editButton}>
             <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>
@@ -119,7 +107,7 @@ useEffect(()=>{
               TMMIN Car Rental lebih mudah
             </Text>
             <Button
-              onPress={() => navigation.navigate('SignUp')}
+              onPress={handleRegister}
               style={styles.buttonContainer}
               color="#3D7B3F"
               title="Register"

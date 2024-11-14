@@ -1,16 +1,18 @@
-import React, {useEffect, useReducer, useState} from 'react';
-import {View, Text, StyleSheet, Image, TextInput, Alert} from 'react-native';
+import React, {useCallback, useEffect, useReducer, useState} from 'react';
+import {View, Text, StyleSheet, Image, TextInput, ActivityIndicator} from 'react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
 import Button from '../components/Button';
 import {Link, useNavigation} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import ModalPopup from '../components/Modal';
 
+//redux
+import { useDispatch,useSelector } from 'react-redux';
+import { postLogin,selectUser,resetState } from '../redux/reducers/user';
+
 const initialFormState = {
-  email: 'tegalcorporate@gmail.com',
-  password: '@Slamet123',
+  email: '',
+  password: '',
 };
 function SignUp() {
   // const [email, setEmail] = useState('wiwin54@gmail.com');
@@ -18,8 +20,11 @@ function SignUp() {
   const [formData, setFormData] = useState(initialFormState);
   const [modalVisibile, setModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
-
+  const user = useSelector(selectUser)
+  const dispatch = useDispatch()
   const navigation = useNavigation();
+
+  console.log('login',user)
 
   const handleChange = (val, name) => {
     setFormData({
@@ -29,43 +34,39 @@ function SignUp() {
   };
 
   const handleLogin = async () => {
-    try {
-      const response = await axios.post(
-        'http://192.168.1.35:3000/api/v1/auth/signin',
-        formData,
-      );
-
-      //Untuk async storage ( menyimpan data )
-      const {data} = response.data;
-      await AsyncStorage.setItem('token', JSON.stringify(data.token));
-      await AsyncStorage.setItem(
-        'users',
-        JSON.stringify({
-          fullname : data.user.fullname,
-          email: data.user.email,
-        }),
-      );
-      setModalVisible(true);
-      setErrorMessage(null);
-    } catch (error) {
-      const errorMessage = error.response.data.message;
-      setModalVisible(true);
-      setErrorMessage(errorMessage);
-      console.log(errorMessage);
-    }
+    await dispatch(postLogin(formData))
   };
+ 
 
   useEffect(() => {
-    if (modalVisibile === true) {
+    if (user.status === 'success') {
+      setModalVisible(true);
+      setErrorMessage(null);
       setTimeout(() => {
-        if (errorMessage === null) navigation.navigate('homeTabs');
         setModalVisible(false);
-        setFormData(initialFormState);
+        navigation.navigate('homeTabs', { screen: 'Akun' });
       }, 1000);
+    } else if (user.status === 'failed') {
+      setModalVisible(true);
+     setErrorMessage(user.message)
+      setTimeout(() => {
+        setModalVisible(false);
+      }, 2000)
     }
-  });
+  }, [user]);
+
   return (
     <View>
+      <ModalPopup visible={user.status === 'loading'}>
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <ActivityIndicator />
+          </View>
+        </ModalPopup>
+
       <View style={styles.titleWrapper}>
         <Image
           source={require('../../assets/logo_toyota.png')}
@@ -80,7 +81,7 @@ function SignUp() {
             placeholder="Contoh : john_doe123@gmail.com"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-            value={'tegalcorporate@gmail.com'}
+            // value={'tegalcorporate@gmail.com'}
             onChangeText={text => handleChange(text, 'email')}
           />
         </View>
@@ -92,7 +93,7 @@ function SignUp() {
             placeholder="min.8,!@,123,Aa"
             placeholderTextColor={'#A5A5A5'}
             style={styles.formInput}
-            value={'@Slamet123'}
+            // value={'@Slamet123'}
             onChangeText={text => handleChange(text, 'password')}
           />
         </View>

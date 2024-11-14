@@ -14,6 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import { formatCurrency } from '../utils/formatCurrency';
 
+
 export default function PaymentScreen() {
   const [activeStep, setActiveStep] = useState(1);
   const [selectedBank, setSelectedBank] = useState('');
@@ -167,12 +168,13 @@ export default function PaymentScreen() {
       {/* Bottom Section */}
       <View style={styles.bottomSection}>
         <View style={styles.totalPrice}>
-          <Text style={styles.totalPriceText}>Rp 230.000</Text>
+          <Text style={styles.totalPriceText}>{formatIDR(cars.price)}</Text>
           <Icon name="chevron-down" size={20} color="#000" />
         </View>
         <TouchableOpacity
           style={[styles.payButton, !selectedBank && styles.payButtonDisabled]}
-          disabled={!selectedBank}>
+          disabled={!selectedBank}
+          onPress={()=> navigation.navigate('payed',{ banks, selectedBank})}>
           <Text style={styles.payButtonText}>Bayar</Text>
         </TouchableOpacity>
       </View>

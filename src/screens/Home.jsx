@@ -48,7 +48,7 @@ function Home() {
 
   const fetchCars = async () => {
     try {
-      const res = await axios('http://192.168.1.35:3000/api/v1/cars');
+      const res = await axios('http://192.168.238.158:3000/api/v1/cars');
       // console.log(res.data)
       setCars(res.data);
     } catch (e) {

@@ -24,7 +24,7 @@ function SignUp() {
   // const [password, setPassword] = useState('');
   const [formData, setFormData] = useState(initialFormState);
   const [modalVisibile,setModalVisible] = useState(false)
-  const [errorMessage,setErrorMessage] = useState(null)
+  const [errorMessage,setErrorMessage] = useState('')
   const navigation = useNavigation();
 
   const handleChange = (val, name) => {
@@ -36,11 +36,10 @@ function SignUp() {
 
   const handleRegister = async () => {
 
-    
     try {
-      const response = await axios.post(
-        'http://192.168.1.35:3000/api/v1//auth/signup',
-        formData,
+      const response = await axios.post( 
+        'http://192.168.238.158/api/v1//auth/signup',
+    formData,
       );
      setModalVisible(true)
      setErrorMessage(null)
@@ -48,7 +47,6 @@ function SignUp() {
       const errorMessage = error.response.data.message
       setModalVisible(true)
       setErrorMessage(errorMessage)
-      
       console.log(errorMessage);
     }
   };

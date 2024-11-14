@@ -15,6 +15,9 @@ import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import {useNavigation} from '@react-navigation/native';
+import { useDispatch,useSelector } from 'react-redux';
+import { getCars,resetState ,selectCars} from '../redux/reducers/cars';
+import { getProfile, selectUser } from '../redux/reducers/user';
 
 const Colors = {
   primary: '#A43333',
@@ -55,7 +58,7 @@ const CarDummy = [
   },
 ];
 
-console.log(CarDummy.image);
+
 
 const CarPage = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -63,32 +66,31 @@ const CarPage = () => {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
   const navigation = useNavigation();
-  const [car, setCar] = useState([]);
-  const [user, setUser] = useState(null);
+const car = useSelector(selectCars)
+const user = useSelector(selectUser)
+const dispatch = useDispatch()
 
   const getUser = async () => {
-    const user = setUser(await AsyncStorage.getItem('users'));
-    const token = await AsyncStorage.getItem('token');
+dispatch(getProfile())
   };
 
-  const getCars = async () => {
-    try {
-      const res = await axios.get('http://192.168.1.35:3000/api/v1/cars');
-      setCar(res.data.data);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  useEffect(() => {
-    getCars();
-  }, [user]);
+  const Cars = async () => {
+    dispatch(getCars())
+  }
+useEffect(()=> {
+  Cars()
+},[]) 
+
+
 
   useFocusEffect(() => {
     getUser();
+    console.log('datauser',user)
     if (!user) {
-      setCar('');
+      resetState()
     }
   });
+
 
   return (
     <SafeAreaView style={backgroundStyle}>

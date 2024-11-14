@@ -2,14 +2,23 @@ import React from 'react';
 import Home from './src/screens/Home';
 import CarPage from './src/screens/CarList';
 import Icon from 'react-native-vector-icons/Feather';
-import {NavigationContainer} from '@react-navigation/native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+
+
+import { store, persistor } from './src/redux/store';
+
+
 import ProfileScreen from './src/screens/Profile';
 import SignIn from './src/screens/SignIn';
 import SignUp from './src/screens/SignUp';
 import carDetail from './src/screens/CarDetail';
 import PaymentScreen from './src/screens/Payment';
+import PaymentConfirmation from './src/screens/payed';
+import { ActivityIndicator } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -47,45 +56,56 @@ function Tabs() {
 
 function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          options={{
-            headerShown: false,
-          }}
-          name="homeTabs"
-          component={Tabs}
-        />
-        <Stack.Screen
-          options={{
-            headerShown: false,
-          }}
-          name="SignIn"
-          component={SignIn}
-        />
-        <Stack.Screen
-          options={{
-            headerShown: false,
-          }}
-          name="SignUp"
-          component={SignUp}
-        />
-         <Stack.Screen
-          options={{
-            headerShown: false,
-          }}
-          name="carDetail"
-          component={carDetail}
-        />
-        <Stack.Screen
-          options={{
-            headerShown: false,
-          }}
-          name="payment"
-          component={PaymentScreen}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <PersistGate loading={<ActivityIndicator />} persistor={persistor}>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="homeTabs"
+              component={Tabs}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="SignIn"
+              component={SignIn}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="SignUp"
+              component={SignUp}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="carDetail"
+              component={carDetail}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="payment"
+              component={PaymentScreen}
+            />
+            <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="payed"
+              component={PaymentConfirmation}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PersistGate>
+    </Provider>
   );
 }
 

@@ -1,31 +1,57 @@
 import React, { useEffect, useState,useCallback } from 'react';
-import axios from 'axios';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView ,Button} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatCurrency } from '../utils/formatCurrency';
+import Markdown from 'react-native-markdown-display';
+import DateTimePicker from '@react-native-community/datetimepicker'
+
+//redux
+import { useDispatch,useSelector } from 'react-redux';
+import { getCars,resetState,selectCars } from '../redux/reducers/cars';
+
 
 const CarDetail = ({ route }) => {
   const { carId } = route.params;
-  const [car, setCar] = useState(null);
   const navigation = useNavigation();
   const formatIDR = useCallback((price) => formatCurrency.format(price), []) 
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const car = useSelector(selectCars)
+  const dispatch = useDispatch()
+
+  const handleStartDateChange = (event, selectedDate) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) setStartDate(selectedDate);
+  };
+  
+  const handleEndDateChange = (event, selectedDate) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) setEndDate(selectedDate);
+  };
+
+  const renderDescription = () => {
+    return car.description.split(/##/g).map((section, index) => (
+      index === 0 ? (
+        <Text key={index}>{section.replace(/\\n/g, '\n')}</Text>
+      ) : (
+        <Text key={index} style={styles.h2}>
+          {section.replace(/\\n/g, '\n')}
+        </Text>
+      )
+    ));
+  };
+  
 
   useEffect(() => {
-    const fetchCarDetails = async () => {
-      try {
-        const res = await axios.get(`http://192.168.1.35:3000/api/v1/cars/${carId}`);
-        setCar(res.data.data);
-        const {data} = res.data;
-        await AsyncStorage.setItem('cars', JSON.stringify(data));
-        
-      } catch (e) {
-        console.log(e);
-      }
-    };
-    fetchCarDetails();
+   dispatch(getCars)
   }, [carId]);
+
+  useEffect(()=> {
+resetState()
+  },[])
 
   if (!car) {
     return <Text>Loading...</Text>;
@@ -72,7 +98,7 @@ const CarDetail = ({ route }) => {
         {/* Package Details */}
         <View style={styles.packageDetails}>
           <Text style={styles.sectionTitle}>Tentang Paket</Text>
-          
+{/*           
           <View style={styles.detailSection}>
             <Text style={styles.detailTitle}>Include</Text>
             <Text style={styles.detailText}>• Apa saja yang termasuk dalam paket misal durasi max 12 jam</Text>
@@ -86,8 +112,43 @@ const CarDetail = ({ route }) => {
             <Text style={styles.detailText}>• Tidak termasuk biaya makan sopir Rp 75.000/hari</Text>
             <Text style={styles.detailText}>• Jika overtime lebih dari 12 jam akan ada tambahan biaya Rp 20.000/jam</Text>
             <Text style={styles.detailText}>• Tidak termasuk akomodasi</Text>
-          </View>
+          </View> */}
+         <Text>{car.description.replace(/##/g, '').replace(/\\n/g, '\n')}</Text>
+
         </View>
+
+        <View style={styles.datePickerContainer}>
+  <Text style={styles.sectionTitle}>Select Dates</Text>
+  
+  {/* Start Date Picker */}
+  <TouchableOpacity style={styles.dateField} onPress={() => setShowStartDatePicker(true)}>
+    <Text style={styles.dateLabel}>Start Date</Text>
+    <Text style={styles.selectedDateText}>{startDate.toDateString()}</Text>
+  </TouchableOpacity>
+  {showStartDatePicker && (
+    <DateTimePicker
+      value={startDate}
+      mode="date"
+      display="default"
+      onChange={handleStartDateChange}
+    />
+  )}
+
+  {/* End Date Picker */}
+  <TouchableOpacity style={styles.dateField} onPress={() => setShowEndDatePicker(true)}>
+    <Text style={styles.dateLabel}>End Date</Text>
+    <Text style={styles.selectedDateText}>{endDate.toDateString()}</Text>
+  </TouchableOpacity>
+  {showEndDatePicker && (
+    <DateTimePicker
+      value={endDate}
+      mode="date"
+      display="default"
+      onChange={handleEndDateChange}
+    />
+  )}
+</View>
+
       </ScrollView>
 
       {/* Bottom Fixed Section */}
@@ -105,6 +166,30 @@ const CarDetail = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+    datePickerContainer: {
+        padding: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#e5e7eb',
+        marginBottom: 16,
+      },
+      dateField: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+        marginBottom: 8,
+      },
+      dateLabel: {
+        fontSize: 16,
+        color: '#4a4a4a',
+      },
+      selectedDateText: {
+        fontSize: 16,
+        color: '#6b7280',
+      },
+      
     container: {
         flex: 1,
         backgroundColor: 'white',
