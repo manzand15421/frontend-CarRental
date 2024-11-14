@@ -32,17 +32,17 @@ const CarDetail = ({ route }) => {
     if (selectedDate) setEndDate(selectedDate);
   };
 
-  const renderDescription = () => {
-    return car.description.split(/##/g).map((section, index) => (
-      index === 0 ? (
-        <Text key={index}>{section.replace(/\\n/g, '\n')}</Text>
-      ) : (
-        <Text key={index} style={styles.h2}>
-          {section.replace(/\\n/g, '\n')}
-        </Text>
-      )
-    ));
-  };
+  // const renderDescription = () => {
+  //   return car.description.split(/##/g).map((section, index) => (
+  //     index === 0 ? (
+  //       <Text key={index}>{section.replace(/\\n/g, '\n')}</Text>
+  //     ) : (
+  //       <Text key={index} style={styles.h2}>
+  //         {section.replace(/\\n/g, '\n')}
+  //       </Text>
+  //     )
+  //   ));
+  // };
   
 
   useEffect(() => {

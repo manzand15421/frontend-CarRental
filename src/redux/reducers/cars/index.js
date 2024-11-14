@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getCars } from "./api";
+import { resetState } from "../user";
 
 const initialState = {
     data : null,
@@ -12,7 +13,8 @@ const carSlice = createSlice({
     name : 'cars',
     initialState,
     reducers : {
-        resetState : (state) => initialState
+      
+        resetCar : (state) => initialState
     },
     extraReducers : builder => {
         builder.addCase(getCars.pending,(state,action) => {
@@ -33,6 +35,6 @@ const carSlice = createSlice({
 
 
 export const selectCars = (state) => state.cars
-export const {resetState} = carSlice.actions
+export const {resetCar} = carSlice.actions
 export {getCars}
 export default carSlice.reducer

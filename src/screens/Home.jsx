@@ -3,7 +3,6 @@ import {
   FlatList,
   Image,
   SafeAreaView,
-  StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
@@ -13,10 +12,14 @@ import {useFocusEffect} from '@react-navigation/native';
 import Button from '../components/Button';
 import Icon from 'react-native-vector-icons/Feather';
 import CarList from '../components/CarList';
-import axios from 'axios';
+
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {useNavigation} from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { selectCars } from '../redux/reducers/cars';
+import { selectUser } from '../redux/reducers/user';
+
 
 const COLORS = {
   primary: '#A43333',
@@ -35,39 +38,13 @@ const ButtonIcon = ({icon, title}) => (
 );
 
 function Home() {
-  const [cars, setCars] = useState([]);
+  const cars = useSelector(selectCars)
   const isDarkMode = useColorScheme() === 'dark';
-  const [user, setUser] = useState(null);
+  const user = useSelector(selectUser)
   const navigation = useNavigation();
+  const headerName = user.data?.fullname || 'Dias Hewan'
   // console.log('data',user)
 
-  const getUser = async () => {
-    // console.log("async storage",JSON.parse(await AsyncStorage.getItem('users')))
-    setUser(JSON.parse(await AsyncStorage.getItem('users')));
-  };
-
-  const fetchCars = async () => {
-    try {
-      const res = await axios('http://192.168.238.158:3000/api/v1/cars');
-      // console.log(res.data)
-      setCars(res.data);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  useEffect(() => {
-    fetchCars();
-  }, [user]);
-
-  useFocusEffect(
-    useCallback(() => {
-      getUser();
-      if (!user) {
-        setCars('');
-      }
-    }, []),
-  );
 
   const backgroundStyle = {
     // overflow: 'visible',
@@ -90,7 +67,7 @@ function Home() {
                 <View>
                   <Text style={styles.headerText}>
                     Hi,
-                    {user ? user.fullname : 'Dias Hewan'}
+                    {headerName}
                   </Text>
                   <Text style={styles.headerTextLocation}>
                     From Tegal Company

@@ -11,6 +11,8 @@ import Icon from 'react-native-vector-icons/Feather'
 import {Link, useNavigation} from '@react-navigation/native';
 import axios from 'axios';
 import ModalPopup from '../components/Modal';
+import { resetCar } from '../redux/reducers/cars';
+import { useDispatch } from 'react-redux';
 
 const initialFormState = {
   fullname: '',
@@ -26,6 +28,7 @@ function SignUp() {
   const [modalVisibile,setModalVisible] = useState(false)
   const [errorMessage,setErrorMessage] = useState('')
   const navigation = useNavigation();
+  const dispatch = useDispatch()
 
   const handleChange = (val, name) => {
     setFormData({
@@ -52,6 +55,7 @@ function SignUp() {
   };
 
   useEffect(() => {
+    dispatch(resetCar())
     if(modalVisibile === true) {
       setTimeout(() => {
         if(errorMessage === null ) navigation.navigate("SignIn")

@@ -3,12 +3,14 @@ import {View, Text, StyleSheet, Image, TextInput, ActivityIndicator} from 'react
 
 import Icon from 'react-native-vector-icons/Feather';
 import Button from '../components/Button';
-import {Link, useNavigation} from '@react-navigation/native';
+import {Link, useFocusEffect, useNavigation} from '@react-navigation/native';
 import ModalPopup from '../components/Modal';
 
 //redux
 import { useDispatch,useSelector } from 'react-redux';
 import { postLogin,selectUser,resetState } from '../redux/reducers/user';
+import { getCars } from '../redux/reducers/cars';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const initialFormState = {
   email: '',
@@ -24,7 +26,6 @@ function SignUp() {
   const dispatch = useDispatch()
   const navigation = useNavigation();
 
-  console.log('login',user)
 
   const handleChange = (val, name) => {
     setFormData({
@@ -35,25 +36,28 @@ function SignUp() {
 
   const handleLogin = async () => {
     await dispatch(postLogin(formData))
+    await dispatch(getCars(user.token))
+
   };
  
-
-  useEffect(() => {
-    if (user.status === 'success') {
-      setModalVisible(true);
-      setErrorMessage(null);
-      setTimeout(() => {
-        setModalVisible(false);
-        navigation.navigate('homeTabs', { screen: 'Akun' });
-      }, 1000);
-    } else if (user.status === 'failed') {
-      setModalVisible(true);
-     setErrorMessage(user.message)
-      setTimeout(() => {
-        setModalVisible(false);
-      }, 2000)
-    }
-  }, [user]);
+  useFocusEffect (
+    React.useCallback(()=> {
+      if (user.status === 'success') {
+        setModalVisible(true);
+        setErrorMessage(null);
+        setTimeout(() => {
+          setModalVisible(false);
+          navigation.navigate('homeTabs', { screen: 'Akun' });
+        }, 1000);
+      } else if (user.status === 'failed') {
+        setModalVisible(true);
+       setErrorMessage(user.message)
+        setTimeout(() => {
+          setModalVisible(false);
+        }, 1000)
+      }
+    },[user])
+  )
 
   return (
     <View>

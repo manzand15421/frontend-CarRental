@@ -16,8 +16,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useFocusEffect} from '@react-navigation/native';
 import {useNavigation} from '@react-navigation/native';
 import { useDispatch,useSelector } from 'react-redux';
-import { getCars,resetState ,selectCars} from '../redux/reducers/cars';
-import { getProfile, selectUser } from '../redux/reducers/user';
+import { getCars,resetCar ,selectCars} from '../redux/reducers/cars';
+import { getProfile,selectUser } from '../redux/reducers/user';
 
 const Colors = {
   primary: '#A43333',
@@ -67,29 +67,6 @@ const CarPage = () => {
   };
   const navigation = useNavigation();
 const car = useSelector(selectCars)
-const user = useSelector(selectUser)
-const dispatch = useDispatch()
-
-  const getUser = async () => {
-dispatch(getProfile())
-  };
-
-  const Cars = async () => {
-    dispatch(getCars())
-  }
-useEffect(()=> {
-  Cars()
-},[]) 
-
-
-
-  useFocusEffect(() => {
-    getUser();
-    console.log('datauser',user)
-    if (!user) {
-      resetState()
-    }
-  });
 
 
   return (
@@ -100,8 +77,8 @@ useEffect(()=> {
       />
 
       <FlatList
-        data={car}
-        renderItem={({item, index}) => (
+        data={car.data}
+        renderItem={({item}) => (
           <CarList
             key={item.toString()}
             image={{uri: item.img}}

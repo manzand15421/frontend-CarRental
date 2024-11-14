@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProfile , selectUser, logout, resetState} from '../redux/reducers/user';
+import { resetCar } from '../redux/reducers/cars';
 
 const ProfileScreen = () => {
   // const [user, setUser] = useState(null);
@@ -21,7 +22,7 @@ const ProfileScreen = () => {
 
   const handleLogout = async () => {
   dispatch(logout())
-  
+  dispatch(resetCar())
   };
 
   const handleRegister =()=> {
@@ -30,7 +31,6 @@ const ProfileScreen = () => {
   }
 
   const getUser = async () => {
-
     await dispatch(getProfile(user.token))
    
   }
