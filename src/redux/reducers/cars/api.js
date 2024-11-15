@@ -6,7 +6,7 @@ export const getCars = createAsyncThunk(
   async (token,{rejectWithValue}) => {
     try {
       const response = await axios.get(
-        'http://192.168.238.158:3000/api/v1/cars',
+        'http://192.168.1.35:3000/api/v1/cars',
         {
           headers: {
             Content: 'application/json',

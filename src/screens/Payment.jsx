@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
-import React, {useEffect, useState,useCallback} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   View,
   Text,
@@ -12,26 +12,15 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { formatCurrency } from '../utils/formatCurrency';
 
+const PaymentScreen = ({route}) => {
+  const {cars, totalPrice, startDate, endDate} = route.params;
 
-export default function PaymentScreen() {
   const [activeStep, setActiveStep] = useState(1);
   const [selectedBank, setSelectedBank] = useState('');
-  const [cars, setCars] = useState('');
   const [promoCode, setPromoCode] = useState('');
-  const navigation = useNavigation()
-  const formatIDR = useCallback((price) => formatCurrency.format(price), []) 
+  const navigation = useNavigation();
 
-  const getCars = async () => {
-   const cars = await AsyncStorage.getItem('cars');
-    setCars(JSON.parse(cars));
-    
-  };
-
-  useEffect(() => {
-    getCars();
-  }, []);
   const steps = [
     {id: 1, title: 'Pilih Metode'},
     {id: 2, title: 'Bayar'},
@@ -43,6 +32,7 @@ export default function PaymentScreen() {
     {id: 'bni', name: 'BNI', subtitle: 'BNI Transfer'},
     {id: 'mandiri', name: 'Mandiri', subtitle: 'Mandiri Transfer'},
   ];
+  const bank = banks.find(bank => bank.id === selectedBank); // filter bank yang dipilih untuk kirim data ke next screen
 
   const renderStepIndicator = () => (
     <View style={styles.stepContainer}>
@@ -84,10 +74,12 @@ export default function PaymentScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} >
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color="#000" />
-        </TouchableOpacity >
-        <Text style={styles.headerTitle}  >Pembayaran</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Pembayaran</Text>
       </View>
 
       {/* Step Indicator */}
@@ -96,10 +88,7 @@ export default function PaymentScreen() {
       <ScrollView style={styles.content}>
         {/* Car Details */}
         <View style={styles.carDetails}>
-          <Image
-            source={{uri:cars.img}}
-            style={styles.carImage}
-          />
+          <Image source={{uri: cars.img}} style={styles.carImage} />
           <View style={styles.carInfo}>
             <Text style={styles.carName}>{cars.name}</Text>
             <View style={styles.carMetrics}>
@@ -113,7 +102,7 @@ export default function PaymentScreen() {
               </View>
             </View>
           </View>
-          <Text style={styles.price}>{formatIDR(cars.price)}</Text>
+          <Text style={styles.price}>{totalPrice}</Text>
         </View>
 
         {/* Payment Method */}
@@ -163,24 +152,41 @@ export default function PaymentScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {/* Tanggal */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tanggal Sewa</Text>
+          <Text style={styles.sectionDescription}>
+            Start : {startDate.toDateString()}
+          </Text>
+          <Text style={styles.sectionDescription}>
+            End : {endDate.toDateString()}
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Bottom Section */}
       <View style={styles.bottomSection}>
         <View style={styles.totalPrice}>
-          <Text style={styles.totalPriceText}>{formatIDR(cars.price)}</Text>
+          <Text style={styles.totalPriceText}>{totalPrice}</Text>
           <Icon name="chevron-down" size={20} color="#000" />
         </View>
         <TouchableOpacity
           style={[styles.payButton, !selectedBank && styles.payButtonDisabled]}
           disabled={!selectedBank}
-          onPress={()=> navigation.navigate('payed',{ banks, selectedBank})}>
+          onPress={() =>
+            navigation.navigate('payed', {
+              bank: bank,
+              car: cars,
+              totalPrice: totalPrice,
+              startDate: startDate,
+            })
+          }>
           <Text style={styles.payButtonText}>Bayar</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -385,3 +391,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+export default PaymentScreen;

@@ -1,5 +1,5 @@
-import { useRoute } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
+import {useRoute} from '@react-navigation/native';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -10,30 +10,31 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import {useNavigation} from '@react-navigation/native';
+import {selectUser} from '../redux/reducers/user';
+import {useSelector} from 'react-redux';
 
 export default function PaymentConfirmation() {
-  const route = useRoute()
-  const { banks,selectedBank } = route.params
+  const user = useSelector(selectUser);
+  const navigation = useNavigation();
+  const route = useRoute();
+  const {bank, car, totalPrice} = route.params;
 
-  const selectedBankDetai = banks.find(bank => bank.id === selectedBank)
-  
   const [timeLeft, setTimeLeft] = useState({
     hours: 23,
     minutes: 55,
-    seconds: 6
+    seconds: 6,
   });
 
   useEffect(() => {
-   
-
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
+          return {...prev, seconds: prev.seconds - 1};
         } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+          return {...prev, minutes: prev.minutes - 1, seconds: 59};
         } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+          return {hours: prev.hours - 1, minutes: 59, seconds: 59};
         }
         clearInterval(timer);
         return prev;
@@ -44,9 +45,9 @@ export default function PaymentConfirmation() {
   }, []);
 
   const steps = [
-    { id: 1, title: 'Pilih Metode', active: true, completed: true },
-    { id: 2, title: 'Bayar', active: true, completed: false },
-    { id: 3, title: 'Tiket', active: false, completed: false },
+    {id: 1, title: 'Pilih Metode', active: true, completed: true},
+    {id: 2, title: 'Bayar', active: true, completed: false},
+    {id: 3, title: 'Tiket', active: false, completed: false},
   ];
 
   const renderStepIndicator = () => (
@@ -57,19 +58,22 @@ export default function PaymentConfirmation() {
             <View
               style={[
                 styles.stepNumber,
-                { 
-                  backgroundColor: step.completed ? '#22c55e' : 
-                                 step.active ? '#22c55e' : '#e5e7eb' 
+                {
+                  backgroundColor: step.completed
+                    ? '#22c55e'
+                    : step.active
+                    ? '#22c55e'
+                    : '#e5e7eb',
                 },
-              ]}
-            >
+              ]}>
               {step.completed ? (
                 <Icon name="check" size={12} color="white" />
               ) : (
-                <Text style={[
-                  styles.stepNumberText,
-                  { color: step.active ? 'white' : '#6b7280' }
-                ]}>
+                <Text
+                  style={[
+                    styles.stepNumberText,
+                    {color: step.active ? 'white' : '#6b7280'},
+                  ]}>
                   {step.id}
                 </Text>
               )}
@@ -77,10 +81,12 @@ export default function PaymentConfirmation() {
             <Text style={styles.stepTitle}>{step.title}</Text>
           </View>
           {index < steps.length - 1 && (
-            <View style={[
-              styles.stepLine,
-              { backgroundColor: step.completed ? '#22c55e' : '#e5e7eb' }
-            ]} />
+            <View
+              style={[
+                styles.stepLine,
+                {backgroundColor: step.completed ? '#22c55e' : '#e5e7eb'},
+              ]}
+            />
           )}
         </View>
       ))}
@@ -91,11 +97,13 @@ export default function PaymentConfirmation() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>{selectedBankDetai.subtitle}</Text>
+          <Text style={styles.headerTitle}>{bank.subtitle}</Text>
           <Text style={styles.orderId}>Order ID: xxxxxxxx</Text>
         </View>
       </View>
@@ -106,9 +114,7 @@ export default function PaymentConfirmation() {
       <ScrollView style={styles.content}>
         {/* Timer */}
         <View style={styles.timerSection}>
-          <Text style={styles.timerLabel}>
-            Selesaikan Pembayaran Sebelum
-          </Text>
+          <Text style={styles.timerLabel}>Selesaikan Pembayaran Sebelum</Text>
           <View style={styles.timerContainer}>
             <Text style={styles.timerText}>
               {String(timeLeft.hours).padStart(2, '0')}:
@@ -116,19 +122,14 @@ export default function PaymentConfirmation() {
               {String(timeLeft.seconds).padStart(2, '0')}
             </Text>
           </View>
-          <Text style={styles.dateText}>
-            Rabu, 19 Jun 2022 jam 13.00 WIB
-          </Text>
+          <Text style={styles.dateText}>jam 13.00 WIB</Text>
         </View>
 
         {/* Car Details */}
         <View style={styles.carDetails}>
-          <Image
-            source={{ uri: '/placeholder.svg?height=60&width=60' }}
-            style={styles.carImage}
-          />
+          <Image source={{uri: car.img}} style={styles.carImage} />
           <View style={styles.carInfo}>
-            <Text style={styles.carName}>Innova Zenix</Text>
+            <Text style={styles.carName}>{car.name}</Text>
             <View style={styles.carMetrics}>
               <View style={styles.metric}>
                 <Icon name="users" size={16} color="#6b7280" />
@@ -140,16 +141,17 @@ export default function PaymentConfirmation() {
               </View>
             </View>
           </View>
-          <Text style={styles.price}>Rp 230.000</Text>
+          <Text style={styles.price}>{totalPrice}</Text>
         </View>
 
         {/* Transfer Details */}
+
         <View style={styles.transferSection}>
           <Text style={styles.sectionTitle}>Lakukan Transfer ke</Text>
           <View style={styles.bankCard}>
-            <Text style={styles.bankName}>BCA</Text>
-            <Text style={styles.bankSubtitle}>BCA Transfer</Text>
-            <Text style={styles.bankNote}>a.n Jeep Bromo Online</Text>
+            <Text style={styles.bankName}>{bank.name}</Text>
+            <Text style={styles.bankSubtitle}>{bank.subtitle}</Text>
+            <Text style={styles.bankNote}>{user.data.fullname}</Text>
           </View>
 
           <View style={styles.accountSection}>
@@ -163,7 +165,7 @@ export default function PaymentConfirmation() {
 
             <Text style={styles.fieldLabel}>Total Bayar</Text>
             <View style={styles.copyField}>
-              <Text style={styles.totalAmount}>Rp 230.000</Text>
+              <Text style={styles.totalAmount}>{totalPrice}</Text>
               <TouchableOpacity>
                 <Icon name="copy" size={20} color="#22c55e" />
               </TouchableOpacity>
@@ -171,23 +173,25 @@ export default function PaymentConfirmation() {
           </View>
         </View>
 
-        <View style={[styles.noteSection,styles.bottomSection]}>
+        <View style={[styles.noteSection, styles.bottomSection]}>
           <Text style={styles.noteText}>
             Klik konfirmasi pembayaran untuk mempercepat proses pengecekan
           </Text>
-       
 
-      {/* Bottom Buttons */}
-      <View style={styles.bottomSection2} >
-        <TouchableOpacity style={styles.confirmButton}>
-          <Text style={styles.confirmButtonText}>Konfirmasi Pembayaran</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.orderListButton}>
-          <Text style={styles.orderListButtonText}>Lihat Daftar Pesanan</Text>
-        </TouchableOpacity>
-        
-      </View>
-      </View>
+          {/* Bottom Buttons */}
+          <View style={styles.bottomSection2}>
+            <TouchableOpacity style={styles.confirmButton}>
+              <Text style={styles.confirmButtonText}>
+                Konfirmasi Pembayaran
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.orderListButton}>
+              <Text style={styles.orderListButtonText}>
+                Lihat Daftar Pesanan
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -375,10 +379,10 @@ const styles = StyleSheet.create({
   },
   noteText: {
     fontSize: 20,
-    fontWeight : 800,
+    fontWeight: 800,
     color: '#6b7280',
     textAlign: 'left',
-    width : '70%'
+    width: '70%',
   },
   bottomSection: {
     padding: 16,

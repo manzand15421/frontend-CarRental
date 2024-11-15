@@ -8,14 +8,14 @@ export const postLogin = createAsyncThunk(
      
         try {
             const response = await axios.post(
-              'http://192.168.238.158:3000/api/v1/auth/signin',
+              'http://192.168.1.35:3000/api/v1/auth/signin',
                payload ,{
                 headers : {
                     'Content' : 'application/json' 
                 }
               }
             );
-            //Untuk async storage ( menyimpan data )
+
             const data = response.data;
             return data;
           }  catch (error) {
@@ -31,6 +31,37 @@ export const postLogin = createAsyncThunk(
           }
 
     }
+) 
+
+
+export const postRegister = createAsyncThunk(
+  'user/postRegister',
+  async (payload, {rejectWithValue}) => {
+   
+      try {
+          const response = await axios.post(
+            'http://192.168.1.35:3000/api/v1/auth/signup',
+             payload ,{
+              headers : {
+                  'Content' : 'application/json' 
+              }
+            }
+          );
+          const data = response.data;
+          return data;
+        }  catch (error) {
+          
+          if (error.response.data) {
+            return rejectWithValue(error.response.data.message)
+           
+          }else {
+            return rejectWithValue("Somethink when wrong")
+          }
+      
+      
+        }
+
+  }
 ) 
 
 

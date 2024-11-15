@@ -9,16 +9,10 @@ import { getProfile , selectUser, logout, resetState} from '../redux/reducers/us
 import { resetCar } from '../redux/reducers/cars';
 
 const ProfileScreen = () => {
-  // const [user, setUser] = useState(null);
-  const [login, setLogin] = useState(false);
+
   const navigation = useNavigation();
   const user = useSelector(selectUser)
   const dispatch = useDispatch()
-  // console.log("state login",user.login)
-  
-// console.log("data user",user.data)
-// console.log("data token",user.token)
-
 
   const handleLogout = async () => {
   dispatch(logout())
@@ -31,13 +25,18 @@ const ProfileScreen = () => {
   }
 
   const getUser = async () => {
+    if(user.token){
     await dispatch(getProfile(user.token))
+  }
    
   }
 
   useEffect(() => {
+    if(!user.token) {
+      handleLogout()
+    } 
     getUser()
-  }, []);
+  }, [user.token]);
 
 
   const renderInfoItem = (icon, label,value,) => (
@@ -70,7 +69,7 @@ const ProfileScreen = () => {
         {/* Account Information */}
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}> About Your Account</Text>
-          {renderInfoItem("mail", "Email", user.email)}
+          {renderInfoItem("mail", "Email", user.data?.email)}
           {renderInfoItem("phone", "Phone Number", user.phone)}
           {renderInfoItem("calendar", "Noreg", user.memberSince)}
         </View>

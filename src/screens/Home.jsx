@@ -13,11 +13,12 @@ import Button from '../components/Button';
 import Icon from 'react-native-vector-icons/Feather';
 import CarList from '../components/CarList';
 
+
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 
 import {useNavigation} from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import { selectCars } from '../redux/reducers/cars';
+import { useSelector,useDispatch } from 'react-redux';
+import { selectCars,resetCar } from '../redux/reducers/cars';
 import { selectUser } from '../redux/reducers/user';
 
 
@@ -42,9 +43,17 @@ function Home() {
   const isDarkMode = useColorScheme() === 'dark';
   const user = useSelector(selectUser)
   const navigation = useNavigation();
+  const dispatch = useDispatch()
+
+  useFocusEffect((
+    React.useCallback(() => {
+      if (!user.token)
+        dispatch(resetCar())
+    }, [user.token])
+  ))
+
   const headerName = user.data?.fullname || 'Dias Hewan'
   // console.log('data',user)
-
 
   const backgroundStyle = {
     // overflow: 'visible',
@@ -119,7 +128,7 @@ function Home() {
             passengers={5}
             baggage={4}
             price={item.price}
-            onPress={() => navigation.navigate('carDetail', {carId: item.id})}
+            onPress={() => navigation.navigate('carDetail', {carId: item.id} )}
           />
         )}
         keyExtractor={item => item.id}

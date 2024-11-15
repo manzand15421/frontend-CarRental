@@ -8,11 +8,11 @@ import {
 } from 'react-native';
 import Button from '../components/Button';
 import Icon from 'react-native-vector-icons/Feather'
-import {Link, useNavigation} from '@react-navigation/native';
-import axios from 'axios';
+import {Link, useNavigation,useFocusEffect} from '@react-navigation/native';
+
 import ModalPopup from '../components/Modal';
-import { resetCar } from '../redux/reducers/cars';
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector } from 'react-redux';
+import { postRegister,resetState,selectUser } from '../redux/reducers/user';
 
 const initialFormState = {
   fullname: '',
@@ -28,6 +28,7 @@ function SignUp() {
   const [modalVisibile,setModalVisible] = useState(false)
   const [errorMessage,setErrorMessage] = useState('')
   const navigation = useNavigation();
+  const user = useSelector(selectUser)
   const dispatch = useDispatch()
 
   const handleChange = (val, name) => {
@@ -38,32 +39,31 @@ function SignUp() {
   };
 
   const handleRegister = async () => {
-
-    try {
-      const response = await axios.post( 
-        'http://192.168.238.158/api/v1//auth/signup',
-    formData,
-      );
-     setModalVisible(true)
-     setErrorMessage(null)
-    } catch (error) {
-      const errorMessage = error.response.data.message
-      setModalVisible(true)
-      setErrorMessage(errorMessage)
-      console.log(errorMessage);
-    }
+  if(formData) 
+    await dispatch(postRegister(formData))
   };
 
-  useEffect(() => {
-    dispatch(resetCar())
-    if(modalVisibile === true) {
-      setTimeout(() => {
-        if(errorMessage === null ) navigation.navigate("SignIn")
-          setModalVisible(false)
-          setFormData(initialFormState)
-      },1000)
-    }
-  })
+  useFocusEffect (
+    React.useCallback(()=> {
+      if (user.status === 'success') {
+        setModalVisible(true);
+        setErrorMessage(null);
+        dispatch(resetState())
+        setTimeout(() => {
+          setModalVisible(false);
+          navigation.navigate('SignIn');
+        }, 1000);
+      } else if (user.status === 'failed') {
+        setModalVisible(true);
+       setErrorMessage(user.message)
+       dispatch(resetState())
+        setTimeout(() => {
+          setModalVisible(false);
+        }, 1000)
+      }
+    },[user.status])
+  )
+
   return (
     <View>
       <View style={styles.titleWrapper}>
@@ -136,7 +136,7 @@ function SignUp() {
           ) : (
             <>
               <Icon size={32} name={'check-circle'} />
-              <Text>Berhasil Login</Text>
+              <Text>Akun Berhasil Di daftarkan</Text>
             </>
           )}
         </View>

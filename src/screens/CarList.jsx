@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,13 @@ import {
 } from 'react-native';
 
 import CarList from '../components/CarList';
-import axios from 'axios';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
-import {useNavigation} from '@react-navigation/native';
-import { useDispatch,useSelector } from 'react-redux';
-import { getCars,resetCar ,selectCars} from '../redux/reducers/cars';
-import { getProfile,selectUser } from '../redux/reducers/user';
+import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+
+import { useDispatch, useSelector } from 'react-redux';
+import { getCars, resetCar, selectCars } from '../redux/reducers/cars';
+import { selectUser } from '../redux/reducers/user';
 
 const Colors = {
   primary: '#A43333',
@@ -58,16 +57,30 @@ const CarDummy = [
   },
 ];
 
-
-
 const CarPage = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  const navigation = useNavigation();
-const car = useSelector(selectCars)
 
+  const navigation = useNavigation();
+  const car = useSelector(selectCars);
+  const user = useSelector(selectUser);
+  const dispatch = useDispatch();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user.token) dispatch(getCars(user.token));
+      // console.log('datacars',car)
+    }, [user]),
+  );
+
+  useFocusEffect((
+    React.useCallback(() => {
+      if (!user.token)
+        dispatch(resetCar())
+    }, [user.token])
+  ))
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -78,15 +91,20 @@ const car = useSelector(selectCars)
 
       <FlatList
         data={car.data}
-        renderItem={({item}) => (
+        renderItem={({ item }) => (
           <CarList
             key={item.toString()}
-            image={{uri: item.img}}
+            image={{ uri: item.img }}
             carName={item.name}
             passengers={5}
             baggage={4}
             price={item.price}
-            onPress={() => navigation.navigate('carDetail', {carId: item.id})}
+            onPress={() =>
+              navigation.navigate('carDetail', {
+                carId: item.id,
+                carName: item.name,
+              })
+            }
           />
         )}
         keyExtractor={item => item.id}

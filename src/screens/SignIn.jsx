@@ -8,17 +8,14 @@ import ModalPopup from '../components/Modal';
 
 //redux
 import { useDispatch,useSelector } from 'react-redux';
-import { postLogin,selectUser,resetState } from '../redux/reducers/user';
-import { getCars } from '../redux/reducers/cars';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { postLogin,selectUser,resetState} from '../redux/reducers/user';
 
 const initialFormState = {
   email: '',
   password: '',
 };
-function SignUp() {
-  // const [email, setEmail] = useState('wiwin54@gmail.com');
-  // const [password, setPassword] = useState('@Slamet13');
+function SignIn() {
+ 
   const [formData, setFormData] = useState(initialFormState);
   const [modalVisibile, setModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -36,12 +33,13 @@ function SignUp() {
 
   const handleLogin = async () => {
     await dispatch(postLogin(formData))
-    await dispatch(getCars(user.token))
+    // await dispatch(getCars(user.token))
 
   };
  
   useFocusEffect (
     React.useCallback(()=> {
+      console.log("datatoken :",user.token , 'status : ' ,user.status)
       if (user.status === 'success') {
         setModalVisible(true);
         setErrorMessage(null);
@@ -51,6 +49,7 @@ function SignUp() {
         }, 1000);
       } else if (user.status === 'failed') {
         setModalVisible(true);
+        dispatch(resetState())
        setErrorMessage(user.message)
         setTimeout(() => {
           setModalVisible(false);
@@ -198,4 +197,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUp;
+export default SignIn;

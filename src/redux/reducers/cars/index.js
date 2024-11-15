@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getCars } from "./api";
-import { resetState } from "../user";
+
 
 const initialState = {
     data : null,
@@ -24,6 +24,7 @@ const carSlice = createSlice({
             state.status = 'success'
             state.data = action.payload.data
             state.message = action.payload
+       
         })
         builder.addCase(getCars.rejected,(state,action)=> {
             state.status = 'failed'

@@ -7,11 +7,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-
-
 import { store, persistor } from './src/redux/store';
-
-
 import ProfileScreen from './src/screens/Profile';
 import SignIn from './src/screens/SignIn';
 import SignUp from './src/screens/SignUp';
