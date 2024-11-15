@@ -1,5 +1,6 @@
 import {useRoute} from '@react-navigation/native';
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
+
 import {
   View,
   Text,
@@ -12,37 +13,96 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {selectUser} from '../redux/reducers/user';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
+import {setEndTime, selectEndTime, clearTime} from '../redux/reducers/timer';
 
-export default function PaymentConfirmation() {
+export default function Payment2() {
   const user = useSelector(selectUser);
+  const timer = useSelector(selectEndTime);
+  const [timeNow, setTimeNow] = useState({hours: 0, minutes: 0, seconds: 0});
+  const [timeSet, setTimeSet] = useState({hours: 0, minutes: 0, seconds: 10});
+  const [targetTime, setTargetTime] = useState('');
+  const intervalRef = useRef(null);
+
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const route = useRoute();
   const {bank, car, totalPrice} = route.params;
 
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 23,
-    minutes: 55,
-    seconds: 6,
-  });
+  const clearTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return {...prev, seconds: prev.seconds - 1};
-        } else if (prev.minutes > 0) {
-          return {...prev, minutes: prev.minutes - 1, seconds: 59};
-        } else if (prev.hours > 0) {
-          return {hours: prev.hours - 1, minutes: 59, seconds: 59};
-        }
-        clearInterval(timer);
-        return prev;
-      });
-    }, 1000);
+    const now = new Date();
+    const target = new Date(
+      now.getTime() +
+        timeSet.hours * 60 * 60 * 1000 +
+        timeSet.minutes * 60 * 1000 +
+        timeSet.seconds * 1000,
+    );
 
-    return () => clearInterval(timer);
-  }, []);
+    const formattedTime = target.toLocaleString('id-ID', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    });
+
+    setTargetTime(formattedTime);
+  }, [timeSet]);
+
+  useEffect(() => {
+    if (!timer) {
+      const now = new Date().getTime();
+      const newTimer =
+        now +
+        (timeSet.hours * 60 * 60 * 1000 +
+          timeSet.minutes * 60 * 1000 +
+          timeSet.seconds * 1000);
+      dispatch(setEndTime(newTimer));
+    }
+  }, [dispatch, timer]);
+
+  const calculateTime = () => {
+    if (!timer) return;
+    const now = new Date().getTime();
+
+    const updateTime = timer - now;
+
+    if (updateTime <= 0) {
+      setTimeNow({hours: 0, minutes: 0, seconds: 0});
+      clearTimer();
+      dispatch(clearTime());
+      return;
+    }
+
+    const hours = Math.floor(updateTime / (1000 * 60 * 60));
+    const minutes = Math.floor((updateTime % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((updateTime % (1000 * 60)) / 1000);
+
+    setTimeNow({hours, minutes, seconds});
+  };
+
+  useEffect(() => {
+    console.log('cek', timer);
+    if (timer) calculateTime();
+    intervalRef.current = setInterval(() => {
+      calculateTime();
+    }, 1000);
+    return () => clearTimer();
+  }, [timer]);
+
+  // useEffect(() => {
+
+  //   dispatch(clearTime());
+  // }, [timeSet]);
 
   const steps = [
     {id: 1, title: 'Pilih Metode', active: true, completed: true},
@@ -117,12 +177,12 @@ export default function PaymentConfirmation() {
           <Text style={styles.timerLabel}>Selesaikan Pembayaran Sebelum</Text>
           <View style={styles.timerContainer}>
             <Text style={styles.timerText}>
-              {String(timeLeft.hours).padStart(2, '0')}:
-              {String(timeLeft.minutes).padStart(2, '0')}:
-              {String(timeLeft.seconds).padStart(2, '0')}
+              {String(timeNow.hours).padStart(2, '0')}:
+              {String(timeNow.minutes).padStart(2, '0')}:
+              {String(timeNow.seconds).padStart(2, '0')}
             </Text>
           </View>
-          <Text style={styles.dateText}>jam 13.00 WIB</Text>
+          <Text style={styles.dateText}>{targetTime}</Text>
         </View>
 
         {/* Car Details */}

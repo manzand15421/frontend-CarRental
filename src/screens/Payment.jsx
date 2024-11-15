@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, { useState} from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
-const PaymentScreen = ({route}) => {
+const Payment1 = ({route}) => {
   const {cars, totalPrice, startDate, endDate} = route.params;
 
   const [activeStep, setActiveStep] = useState(1);
@@ -391,4 +391,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-export default PaymentScreen;
+export default Payment1;

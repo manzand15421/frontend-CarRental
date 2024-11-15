@@ -12,9 +12,10 @@ import ProfileScreen from './src/screens/Profile';
 import SignIn from './src/screens/SignIn';
 import SignUp from './src/screens/SignUp';
 import carDetail from './src/screens/CarDetail';
-import PaymentScreen from './src/screens/Payment';
-import PaymentConfirmation from './src/screens/payed';
+import Payment1 from './src/screens/Payment';
+import Payment2 from './src/screens/payed';
 import { ActivityIndicator } from 'react-native';
+import TimerScreen from './src/screens/trial';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -89,14 +90,21 @@ function App() {
                 headerShown: false,
               }}
               name="payment"
-              component={PaymentScreen}
+              component={Payment1}
             />
             <Stack.Screen
               options={{
                 headerShown: false,
               }}
               name="payed"
-              component={PaymentConfirmation}
+              component={Payment2}
+            />
+             <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="trial"
+              component={TimerScreen}
             />
           </Stack.Navigator>
         </NavigationContainer>
