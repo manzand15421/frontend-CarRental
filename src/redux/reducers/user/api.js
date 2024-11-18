@@ -8,7 +8,7 @@ export const postLogin = createAsyncThunk(
      
         try {
             const response = await axios.post(
-              'http://192.168.1.35:3000/api/v1/auth/signin',
+              'http://192.168.238.158:3000/api/v1/auth/signin',
                payload ,{
                 headers : {
                     'Content' : 'application/json' 
@@ -40,7 +40,7 @@ export const postRegister = createAsyncThunk(
    
       try {
           const response = await axios.post(
-            'http://192.168.1.35:3000/api/v1/auth/signup',
+            'http://192.168.238.158:3000/api/v1/auth/signup',
              payload ,{
               headers : {
                   'Content' : 'application/json' 

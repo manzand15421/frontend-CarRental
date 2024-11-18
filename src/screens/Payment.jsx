@@ -1,6 +1,6 @@
 
 import {useNavigation} from '@react-navigation/native';
-import React, { useState} from 'react';
+import React, { useState,useCallback  } from 'react';
 import {
   View,
   Text,
@@ -12,20 +12,35 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import {formatCurrency} from '../utils/formatCurrency';
+
 
 const Payment1 = ({route}) => {
-  const {cars, totalPrice, startDate, endDate} = route.params;
-
+  const {cars} = route.params;
   const [activeStep, setActiveStep] = useState(1);
   const [selectedBank, setSelectedBank] = useState('');
   const [promoCode, setPromoCode] = useState('');
   const navigation = useNavigation();
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const formatIDR = useCallback(price => formatCurrency.format(price), []);
+  //penghitungan jangka waktu renttal
+  const diffTime = Math.abs(endDate - startDate);
+  const rentalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const totalPrice = formatIDR(cars.price * rentalDays);
 
-  const steps = [
-    {id: 1, title: 'Pilih Metode'},
-    {id: 2, title: 'Bayar'},
-    {id: 3, title: 'Tiket'},
-  ];
+  const handleStartDateChange = (event, selectedDate) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) setStartDate(selectedDate);
+  };
+
+  const handleEndDateChange = (event, selectedDate) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) setEndDate(selectedDate);
+  };
 
   const banks = [
     {id: 'bca', name: 'BCA', subtitle: 'BCA Transfer'},
@@ -34,6 +49,24 @@ const Payment1 = ({route}) => {
   ];
   const bank = banks.find(bank => bank.id === selectedBank); // filter bank yang dipilih untuk kirim data ke next screen
 
+  const handleNextPayment = () => {
+
+    navigation.navigate('payed', {
+      bank: bank,
+      car : cars,
+      totalPrice: totalPrice,
+      startDate: startDate,
+      endDate: endDate,
+    })
+
+  };
+  const steps = [
+    {id: 1, title: 'Pilih Metode'},
+    {id: 2, title: 'Bayar'},
+    {id: 3, title: 'Tiket'},
+  ];
+
+ 
   const renderStepIndicator = () => (
     <View style={styles.stepContainer}>
       {steps.map((step, index) => (
@@ -102,7 +135,7 @@ const Payment1 = ({route}) => {
               </View>
             </View>
           </View>
-          <Text style={styles.price}>{totalPrice}</Text>
+          <Text style={styles.price}>{formatIDR(cars.price)}</Text>
         </View>
 
         {/* Payment Method */}
@@ -152,16 +185,47 @@ const Payment1 = ({route}) => {
             </TouchableOpacity>
           </View>
         </View>
-        {/* Tanggal */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tanggal Sewa</Text>
-          <Text style={styles.sectionDescription}>
-            Start : {startDate.toDateString()}
-          </Text>
-          <Text style={styles.sectionDescription}>
-            End : {endDate.toDateString()}
-          </Text>
+        <View style={styles.datePickerContainer}>
+          <Text style={styles.sectionTitle}>Select Dates</Text>
+
+          {/* Start Date Picker */}
+          <TouchableOpacity
+            style={styles.dateField}
+            onPress={() => setShowStartDatePicker(true)}>
+            <Text style={styles.dateLabel}>Start Date</Text>
+            <Text style={styles.selectedDateText}>
+              {startDate.toDateString()}
+            </Text>
+          </TouchableOpacity>
+          {showStartDatePicker && (
+            <DateTimePicker
+              value={startDate}
+              mode="date"
+              display="default"
+              onChange={handleStartDateChange}
+            />
+          )}
+
+          {/* End Date Picker */}
+          <TouchableOpacity
+            style={styles.dateField}
+            onPress={() => setShowEndDatePicker(true)}>
+            <Text style={styles.dateLabel}>End Date</Text>
+            <Text style={styles.selectedDateText}>
+              {endDate.toDateString()}
+            </Text>
+          </TouchableOpacity>
+          {showEndDatePicker && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display="default"
+              onChange={handleEndDateChange}
+            />
+          )}
         </View>
+
+       
       </ScrollView>
 
       {/* Bottom Section */}
@@ -173,14 +237,7 @@ const Payment1 = ({route}) => {
         <TouchableOpacity
           style={[styles.payButton, !selectedBank && styles.payButtonDisabled]}
           disabled={!selectedBank}
-          onPress={() =>
-            navigation.navigate('payed', {
-              bank: bank,
-              car: cars,
-              totalPrice: totalPrice,
-              startDate: startDate,
-            })
-          }>
+          onPress={handleNextPayment}>
           <Text style={styles.payButtonText}>Bayar</Text>
         </TouchableOpacity>
       </View>
@@ -189,6 +246,39 @@ const Payment1 = ({route}) => {
 };
 
 const styles = StyleSheet.create({
+  datePickerContainer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    marginBottom: 16,
+  },
+  dateField: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    marginBottom: 8,
+  },
+  dateLabel: {
+    fontSize: 16,
+    color: '#4a4a4a',
+  },
+  selectedDateText: {
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  driverSelection: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    marginBottom: 16,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

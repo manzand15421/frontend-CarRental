@@ -7,19 +7,20 @@ import {
   Text,
   useColorScheme,
   View,
+  ActivityIndicator
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import Button from '../components/Button';
 import Icon from 'react-native-vector-icons/Feather';
 import CarList from '../components/CarList';
-
+import ModalPopup from '../components/Modal';
 
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 
 import {useNavigation} from '@react-navigation/native';
 import { useSelector,useDispatch } from 'react-redux';
-import { selectCars,resetCar } from '../redux/reducers/cars';
-import { selectUser } from '../redux/reducers/user';
+import { selectCars,resetCar, getCars } from '../redux/reducers/cars';
+import { selectUser,logout } from '../redux/reducers/user';
 
 
 const COLORS = {
@@ -41,17 +42,36 @@ const ButtonIcon = ({icon, title}) => (
 function Home() {
   const cars = useSelector(selectCars)
   const isDarkMode = useColorScheme() === 'dark';
+  const [modalVisibile, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   const user = useSelector(selectUser)
   const navigation = useNavigation();
   const dispatch = useDispatch()
 
+
+
   useFocusEffect((
     React.useCallback(() => {
-      if (!user.token)
-        dispatch(resetCar())
+        dispatch(getCars(user.token))
+        console.log(cars.message)
     }, [user.token])
   ))
 
+  useFocusEffect (
+    React.useCallback(()=> {
+      if (cars.status === 'failed') {
+        dispatch(logout())
+        dispatch(resetCar())
+      setModalVisible(true);
+       setErrorMessage(cars.message)
+        setTimeout(() => {
+          setModalVisible(false);
+        }, 1000)
+      }
+    },[cars])
+  )
+
+  
   const headerName = user.data?.fullname || 'Dias Hewan'
   // console.log('data',user)
 
@@ -61,11 +81,21 @@ function Home() {
   };
 
   return (
+    
     <SafeAreaView style={backgroundStyle}>
       <FocusAwareStatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={COLORS.primary}
       />
+        <ModalPopup visible={cars.status === 'loading'}>
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <ActivityIndicator />
+          </View>
+        </ModalPopup>
       {/* end banner */}
       <FlatList
         data={cars.data}
@@ -133,6 +163,14 @@ function Home() {
         )}
         keyExtractor={item => item.id}
       />
+       <ModalPopup visible={modalVisibile}>
+        <View style={styles.modalBackground}>
+            <>
+              <Icon size={13} name={'x-circle'} />
+                <Text> {errorMessage} </Text>
+             </>
+        </View>
+      </ModalPopup>
     </SafeAreaView>
   );
 }

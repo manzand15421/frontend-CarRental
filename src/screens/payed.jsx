@@ -1,4 +1,4 @@
-import {useRoute} from '@react-navigation/native';
+import {useFocusEffect, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState, useRef} from 'react';
 
 import {
@@ -14,13 +14,14 @@ import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {selectUser} from '../redux/reducers/user';
 import {useSelector, useDispatch} from 'react-redux';
-import {setEndTime, selectEndTime, clearTime} from '../redux/reducers/timer';
+import {setEndTime, selectEndTime, clearTime, setBank, selectBank} from '../redux/reducers/timer';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
   const timer = useSelector(selectEndTime);
+  const reduxBank = useSelector(selectBank)
   const [timeNow, setTimeNow] = useState({hours: 0, minutes: 0, seconds: 0});
-  const [timeSet, setTimeSet] = useState({hours: 0, minutes: 0, seconds: 10});
+  const [timeSet, setTimeSet] = useState({hours: 0, minutes: 0, seconds: 30});
   const [targetTime, setTargetTime] = useState('');
   const intervalRef = useRef(null);
 
@@ -28,6 +29,13 @@ export default function Payment2() {
   const dispatch = useDispatch();
   const route = useRoute();
   const {bank, car, totalPrice} = route.params;
+
+  useFocusEffect(
+    React.useCallback(()=> {
+      console.log(reduxBank)
+  dispatch(setBank(bank.name))
+},[])
+)
 
   const clearTimer = () => {
     if (intervalRef.current) {
@@ -79,7 +87,7 @@ export default function Payment2() {
     if (updateTime <= 0) {
       setTimeNow({hours: 0, minutes: 0, seconds: 0});
       clearTimer();
-      dispatch(clearTime());
+      // dispatch(clearTime());
       return;
     }
 
@@ -87,11 +95,13 @@ export default function Payment2() {
     const minutes = Math.floor((updateTime % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((updateTime % (1000 * 60)) / 1000);
 
+    console.log(hours,minutes,seconds)
+
     setTimeNow({hours, minutes, seconds});
   };
 
   useEffect(() => {
-    console.log('cek', timer);
+  
     if (timer) calculateTime();
     intervalRef.current = setInterval(() => {
       calculateTime();
@@ -99,10 +109,11 @@ export default function Payment2() {
     return () => clearTimer();
   }, [timer]);
 
-  // useEffect(() => {
+  
 
+  // useEffect(() => {
   //   dispatch(clearTime());
-  // }, [timeSet]);
+  // }, [reduxBank]);
 
   const steps = [
     {id: 1, title: 'Pilih Metode', active: true, completed: true},

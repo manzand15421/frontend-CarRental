@@ -7,12 +7,14 @@ import {
   StatusBar,
   SafeAreaView,
   useColorScheme,
+  ActivityIndicator
 } from 'react-native';
 
 import CarList from '../components/CarList';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import ModalPopup from '../components/Modal';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { getCars, resetCar, selectCars } from '../redux/reducers/cars';
@@ -66,21 +68,18 @@ const CarPage = () => {
   const navigation = useNavigation();
   const car = useSelector(selectCars);
   const user = useSelector(selectUser);
-  const dispatch = useDispatch();
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (user.token) dispatch(getCars(user.token));
-      // console.log('datacars',car)
-    }, [user]),
-  );
-
-  useFocusEffect((
-    React.useCallback(() => {
-      if (!user.token)
-        dispatch(resetCar())
-    }, [user.token])
-  ))
+  useFocusEffect (
+    React.useCallback(()=> {
+      if (user.status === 'failed') {
+        setModalVisible(true);
+       setErrorMessage(car.message)
+        setTimeout(() => {
+          setModalVisible(false);
+        }, 1000)
+      }
+    },[car])
+  )
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -88,6 +87,16 @@ const CarPage = () => {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={Colors.primary}
       />
+
+<ModalPopup visible={car.status === 'loading'}>
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <ActivityIndicator />
+          </View>
+        </ModalPopup>
 
       <FlatList
         data={car.data}

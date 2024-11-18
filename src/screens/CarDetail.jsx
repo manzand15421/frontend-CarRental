@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useCallback} from 'react';
 import {
   View,
   Text,
@@ -12,49 +12,18 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {formatCurrency} from '../utils/formatCurrency';
-import Markdown from 'react-native-markdown-display';
-import DateTimePicker from '@react-native-community/datetimepicker';
 
 //redux
-import {useDispatch, useSelector} from 'react-redux';
-import {getCars, resetState, selectCars} from '../redux/reducers/cars';
+import {useSelector} from 'react-redux';
+import {selectCars} from '../redux/reducers/cars';
 
 const CarDetail = ({route}) => {
   const {carId} = route.params;
   const navigation = useNavigation();
   const cars = useSelector(selectCars);
   const car = cars?.data?.find(car => car.id === carId);
-
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const formatIDR = useCallback(price => formatCurrency.format(price), []);
-  const diffTime = Math.abs(endDate - startDate);
-  const rentalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  const totalPrice = formatIDR(car.price * rentalDays);
 
-  const handleStartDateChange = (event, selectedDate) => {
-    setShowStartDatePicker(false);
-    if (selectedDate) setStartDate(selectedDate);
-  };
-
-  const handleEndDateChange = (event, selectedDate) => {
-    setShowEndDatePicker(false);
-    if (selectedDate) setEndDate(selectedDate);
-  };
-
-  const handleNextPayment = () => {
-    const diffTime = Math.abs(endDate - startDate);
-    const rentalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    navigation.navigate('payment', {
-      cars : car,
-      totalPrice: totalPrice,
-      startDate: startDate,
-      endDate: endDate,
-    });
-  };
   const md = `## Include
   
   - Apa saja yang termasuk dalam paket misal durasi max 12 jam
@@ -62,7 +31,7 @@ const CarDetail = ({route}) => {
   - Sudah termasuk Tiket Wisata
   - Sudah termasuk pajak
   
-  ## Exclude
+  ## Exclude1
   
   - Tidak termasuk biaya makan sopir Rp 75.000/hari
   - Jika overtime lebih dari 12 jam akan ada tambahan biaya Rp 20.000/jam
@@ -130,56 +99,16 @@ const CarDetail = ({route}) => {
 
           <Text>{md}</Text>
         </View>
-
-        <View style={styles.datePickerContainer}>
-          <Text style={styles.sectionTitle}>Select Dates</Text>
-
-          {/* Start Date Picker */}
-          <TouchableOpacity
-            style={styles.dateField}
-            onPress={() => setShowStartDatePicker(true)}>
-            <Text style={styles.dateLabel}>Start Date</Text>
-            <Text style={styles.selectedDateText}>
-              {startDate.toDateString()}
-            </Text>
-          </TouchableOpacity>
-          {showStartDatePicker && (
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display="default"
-              onChange={handleStartDateChange}
-            />
-          )}
-
-          {/* End Date Picker */}
-          <TouchableOpacity
-            style={styles.dateField}
-            onPress={() => setShowEndDatePicker(true)}>
-            <Text style={styles.dateLabel}>End Date</Text>
-            <Text style={styles.selectedDateText}>
-              {endDate.toDateString()}
-            </Text>
-          </TouchableOpacity>
-          {showEndDatePicker && (
-            <DateTimePicker
-              value={endDate}
-              mode="date"
-              display="default"
-              onChange={handleEndDateChange}
-            />
-          )}
-        </View>
       </ScrollView>
 
       {/* Bottom Fixed Section */}
       <View style={styles.bottomSection}>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>{totalPrice}</Text>
+          <Text style={styles.price}>{formatIDR(car.price)}</Text>
         </View>
         <TouchableOpacity
           style={styles.paymentButton}
-          onPress={handleNextPayment}>
+          onPress={() =>navigation.navigate('payment' , { cars : car })}>
           <Text style={styles.paymentButtonText}>Lanjutkan Pembayaran</Text>
         </TouchableOpacity>
       </View>
@@ -188,39 +117,7 @@ const CarDetail = ({route}) => {
 };
 
 const styles = StyleSheet.create({
-  datePickerContainer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    marginBottom: 16,
-  },
-  dateField: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    marginBottom: 8,
-  },
-  dateLabel: {
-    fontSize: 16,
-    color: '#4a4a4a',
-  },
-  selectedDateText: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  driverSelection: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    marginBottom: 16,
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-  },
+ 
 
   container: {
     flex: 1,
