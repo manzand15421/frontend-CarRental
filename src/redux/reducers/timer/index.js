@@ -17,11 +17,14 @@ const timerSlice = createSlice({
     setBank (state,action) {
       state.bank = action.payload
     },
-    clearTime : (state) => initialState
+    clearTime : (state) => initialState,
+    clear (state,action) {
+      state.endTime = null
+    }
   },
 });
 
 export const selectEndTime = (state) => state.timer.endTime; // Selector for endTime
 export const selectBank =(state) => state.timer.bank
-export const { setEndTime,clearTime ,setBank} = timerSlice.actions;
+export const { setEndTime,clearTime ,setBank,clear} = timerSlice.actions;
 export default timerSlice.reducer;

@@ -1,5 +1,5 @@
 
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import React, { useState,useCallback  } from 'react';
 import {
   View,
@@ -23,11 +23,14 @@ const Payment1 = ({route}) => {
   const [promoCode, setPromoCode] = useState('');
   const navigation = useNavigation();
   const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1); 
+    return tomorrow;
+  });
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const formatIDR = useCallback(price => formatCurrency.format(price), []);
-  //penghitungan jangka waktu renttal
   const diffTime = Math.abs(endDate - startDate);
   const rentalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const totalPrice = formatIDR(cars.price * rentalDays);
@@ -137,6 +140,45 @@ const Payment1 = ({route}) => {
           </View>
           <Text style={styles.price}>{formatIDR(cars.price)}</Text>
         </View>
+        <View style={styles.datePickerContainer}>
+          <Text style={styles.sectionTitle}>Select Dates</Text>
+
+          {/* Start Date Picker */}
+          <TouchableOpacity
+            style={styles.dateField}
+            onPress={() => setShowStartDatePicker(true)}>
+            <Text style={styles.dateLabel}>Start Date</Text>
+            <Text style={styles.selectedDateText}>
+              {startDate.toDateString()}
+            </Text>
+          </TouchableOpacity>
+          {showStartDatePicker && (
+            <DateTimePicker
+              value={startDate}
+              mode="date"
+              display="default"
+              onChange={handleStartDateChange}
+            />
+          )}
+
+          {/* End Date Picker */}
+          <TouchableOpacity
+            style={styles.dateField}
+            onPress={() => setShowEndDatePicker(true)}>
+            <Text style={styles.dateLabel}>End Date</Text>
+            <Text style={styles.selectedDateText}>
+              {endDate.toDateString()}
+            </Text>
+          </TouchableOpacity>
+          {showEndDatePicker && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display="default"
+              onChange={handleEndDateChange}
+            />
+          )}
+        </View>
 
         {/* Payment Method */}
         <View style={styles.section}>
@@ -185,45 +227,6 @@ const Payment1 = ({route}) => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.datePickerContainer}>
-          <Text style={styles.sectionTitle}>Select Dates</Text>
-
-          {/* Start Date Picker */}
-          <TouchableOpacity
-            style={styles.dateField}
-            onPress={() => setShowStartDatePicker(true)}>
-            <Text style={styles.dateLabel}>Start Date</Text>
-            <Text style={styles.selectedDateText}>
-              {startDate.toDateString()}
-            </Text>
-          </TouchableOpacity>
-          {showStartDatePicker && (
-            <DateTimePicker
-              value={startDate}
-              mode="date"
-              display="default"
-              onChange={handleStartDateChange}
-            />
-          )}
-
-          {/* End Date Picker */}
-          <TouchableOpacity
-            style={styles.dateField}
-            onPress={() => setShowEndDatePicker(true)}>
-            <Text style={styles.dateLabel}>End Date</Text>
-            <Text style={styles.selectedDateText}>
-              {endDate.toDateString()}
-            </Text>
-          </TouchableOpacity>
-          {showEndDatePicker && (
-            <DateTimePicker
-              value={endDate}
-              mode="date"
-              display="default"
-              onChange={handleEndDateChange}
-            />
-          )}
-        </View>
 
        
       </ScrollView>
@@ -235,8 +238,8 @@ const Payment1 = ({route}) => {
           <Icon name="chevron-down" size={20} color="#000" />
         </View>
         <TouchableOpacity
-          style={[styles.payButton, !selectedBank && styles.payButtonDisabled]}
-          disabled={!selectedBank}
+          style={[styles.payButton, !(selectedBank && endDate) &&  styles.payButtonDisabled]}
+          disabled={!(selectedBank && endDate)}
           onPress={handleNextPayment}>
           <Text style={styles.payButtonText}>Bayar</Text>
         </TouchableOpacity>

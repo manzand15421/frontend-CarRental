@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {selectUser} from '../redux/reducers/user';
 import {useSelector, useDispatch} from 'react-redux';
-import {setEndTime, selectEndTime, clearTime, setBank, selectBank} from '../redux/reducers/timer';
+import {setEndTime, selectEndTime, clearTime, setBank, selectBank,clear} from '../redux/reducers/timer';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
@@ -32,7 +32,6 @@ export default function Payment2() {
 
   useFocusEffect(
     React.useCallback(()=> {
-      console.log(reduxBank)
   dispatch(setBank(bank.name))
 },[])
 )
@@ -87,7 +86,7 @@ export default function Payment2() {
     if (updateTime <= 0) {
       setTimeNow({hours: 0, minutes: 0, seconds: 0});
       clearTimer();
-      // dispatch(clearTime());
+      dispatch(clearTime());
       return;
     }
 
@@ -109,11 +108,13 @@ export default function Payment2() {
     return () => clearTimer();
   }, [timer]);
 
-  
-
-  // useEffect(() => {
-  //   dispatch(clearTime());
-  // }, [reduxBank]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if(reduxBank !== bank.name){
+        dispatch(clear())
+      }
+    },[])
+  )
 
   const steps = [
     {id: 1, title: 'Pilih Metode', active: true, completed: true},

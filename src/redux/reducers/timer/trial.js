@@ -13,7 +13,10 @@ const timerSlice = createSlice({
     setEndTime(state, action) {
       state.endTime = action.payload; // Set the end time to Redux
     },
-    clearTime : (state) => initialState
+    clearTime : (state) => initialState,
+    clear (state,action) {
+      state.timer = null
+    }
   },
 });
 
