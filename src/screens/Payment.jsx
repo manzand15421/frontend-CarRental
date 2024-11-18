@@ -1,6 +1,5 @@
-
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import React, { useState,useCallback  } from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -14,10 +13,15 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {formatCurrency} from '../utils/formatCurrency';
-
+import {Picker} from '@react-native-picker/picker';
+import ModalPopup from '../components/Modal';
+import {selectUser} from '../redux/reducers/user';
+import {useSelector} from 'react-redux';
+import axios from 'axios';
 
 const Payment1 = ({route}) => {
   const {cars} = route.params;
+  const user = useSelector(selectUser);
   const [activeStep, setActiveStep] = useState(1);
   const [selectedBank, setSelectedBank] = useState('');
   const [promoCode, setPromoCode] = useState('');
@@ -25,15 +29,21 @@ const Payment1 = ({route}) => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(() => {
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1); 
+    tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow;
   });
+
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const formatIDR = useCallback(price => formatCurrency.format(price), []);
+
   const diffTime = Math.abs(endDate - startDate);
   const rentalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const totalPrice = formatIDR(cars.price * rentalDays);
+
+  const [isDriver, setIsDriver] = useState(false);
+  const [modalVisibile, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleStartDateChange = (event, selectedDate) => {
     setShowStartDatePicker(false);
@@ -52,16 +62,52 @@ const Payment1 = ({route}) => {
   ];
   const bank = banks.find(bank => bank.id === selectedBank); // filter bank yang dipilih untuk kirim data ke next screen
 
-  const handleNextPayment = () => {
+  const handleNextPayment = async () => {
+    const data = {
+      car_id: cars.id,
+      start_time: startDate,
+      end_time: endDate,
+      is_driver: isDriver,
+    };
+    try {
+      const res = await axios.post(
+        'http://192.168.238.158:3000/api/v1/order',
+        data,
+        {
+          headers: {
+            Content: 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
 
-    navigation.navigate('payed', {
-      bank: bank,
-      car : cars,
-      totalPrice: totalPrice,
-      startDate: startDate,
-      endDate: endDate,
-    })
-
+      if (res.status === 200) {
+        setModalVisible(true);
+        setErrorMessage(null);
+        setTimeout(() => {
+          navigation.navigate('payed', {
+            bank: bank,
+            car: cars,
+            totalPrice: totalPrice,
+            startDate: startDate,
+            endDate: endDate,
+            isDriver: isDriver,
+          });
+        }, 1000);
+      }
+    } catch (e) {
+      if (e.response && e.response.data) {
+        setErrorMessage(e.response.data.message || 'An error occurred');
+      } else if (e.message) {
+        setErrorMessage(e.message);
+      } else {
+        setErrorMessage('An unexpected error occurred');
+      }
+      setModalVisible(true);
+      setTimeout(() => {
+        setModalVisible(false);
+      }, 1000);
+    }
   };
   const steps = [
     {id: 1, title: 'Pilih Metode'},
@@ -69,7 +115,6 @@ const Payment1 = ({route}) => {
     {id: 3, title: 'Tiket'},
   ];
 
- 
   const renderStepIndicator = () => (
     <View style={styles.stepContainer}>
       {steps.map((step, index) => (
@@ -119,7 +164,7 @@ const Payment1 = ({route}) => {
       </View>
 
       {/* Step Indicator */}
-      {renderStepIndicator()}
+      {/* {renderStepIndicator()} */}
 
       <ScrollView style={styles.content}>
         {/* Car Details */}
@@ -180,6 +225,29 @@ const Payment1 = ({route}) => {
           )}
         </View>
 
+        <View style={styles.driverSelection}>
+          <Text style={styles.sectionTitle}>Pilih Pengemudi</Text>
+
+          {/* Custom Picker with Icon and Border */}
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={isDriver}
+              onValueChange={itemValue => setIsDriver(itemValue)}
+              style={styles.picker}>
+              <Picker.Item label="Tidak Ada Pengemudi" value={false} />
+              <Picker.Item label="Ada Pengemudi" value={true} />
+            </Picker>
+
+            {/* Arrow Icon for Dropdown */}
+            <Icon
+              name="chevron-down"
+              size={20}
+              color="#6b7280"
+              style={styles.pickerIcon}
+            />
+          </View>
+        </View>
+
         {/* Payment Method */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Pilih Bank Transfer</Text>
@@ -227,8 +295,27 @@ const Payment1 = ({route}) => {
             </TouchableOpacity>
           </View>
         </View>
-
-       
+        <ModalPopup visible={modalVisibile}>
+          <View style={styles.modalBackground}>
+            {errorMessage !== null ? (
+              <>
+                <Icon size={13} name={'x-circle'} />
+                {Array.isArray(errorMessage) ? (
+                  errorMessage.map(e => {
+                    return <Text>{e.message}</Text>;
+                  })
+                ) : (
+                  <Text> {errorMessage} </Text>
+                )}
+              </>
+            ) : (
+              <>
+                <Icon size={32} name={'check-circle'} />
+                <Text>Berhasil Order</Text>
+              </>
+            )}
+          </View>
+        </ModalPopup>
       </ScrollView>
 
       {/* Bottom Section */}
@@ -238,7 +325,10 @@ const Payment1 = ({route}) => {
           <Icon name="chevron-down" size={20} color="#000" />
         </View>
         <TouchableOpacity
-          style={[styles.payButton, !(selectedBank && endDate) &&  styles.payButtonDisabled]}
+          style={[
+            styles.payButton,
+            !(selectedBank && endDate) && styles.payButtonDisabled,
+          ]}
           disabled={!(selectedBank && endDate)}
           onPress={handleNextPayment}>
           <Text style={styles.payButtonText}>Bayar</Text>
@@ -262,7 +352,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-    marginBottom: 8,
   },
   dateLabel: {
     fontSize: 16,
@@ -276,12 +365,31 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
-    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  pickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb', // Border color for the Picker
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
   },
   picker: {
-    height: 50,
-    width: '100%',
+    flex: 1,
+    fontSize: 16,
+    color: '#4a4a4a',
   },
+  pickerIcon: {
+    marginLeft: 8, // Adds space between the picker and the icon
+  },
+
   container: {
     flex: 1,
     backgroundColor: '#fff',

@@ -15,13 +15,14 @@ import {useNavigation} from '@react-navigation/native';
 import {selectUser} from '../redux/reducers/user';
 import {useSelector, useDispatch} from 'react-redux';
 import {setEndTime, selectEndTime, clearTime, setBank, selectBank,clear} from '../redux/reducers/timer';
+import axios from 'axios';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
   const timer = useSelector(selectEndTime);
   const reduxBank = useSelector(selectBank)
   const [timeNow, setTimeNow] = useState({hours: 0, minutes: 0, seconds: 0});
-  const [timeSet, setTimeSet] = useState({hours: 0, minutes: 0, seconds: 30});
+  const [timeSet, setTimeSet] = useState({hours: 12, minutes: 0, seconds: 0});
   const [targetTime, setTargetTime] = useState('');
   const intervalRef = useRef(null);
 
@@ -30,6 +31,7 @@ export default function Payment2() {
   const route = useRoute();
   const {bank, car, totalPrice} = route.params;
 
+  
   useFocusEffect(
     React.useCallback(()=> {
   dispatch(setBank(bank.name))
@@ -93,8 +95,6 @@ export default function Payment2() {
     const hours = Math.floor(updateTime / (1000 * 60 * 60));
     const minutes = Math.floor((updateTime % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((updateTime % (1000 * 60)) / 1000);
-
-    console.log(hours,minutes,seconds)
 
     setTimeNow({hours, minutes, seconds});
   };
@@ -252,7 +252,7 @@ export default function Payment2() {
 
           {/* Bottom Buttons */}
           <View style={styles.bottomSection2}>
-            <TouchableOpacity style={styles.confirmButton}>
+            <TouchableOpacity style={styles.confirmButton} onPress={() => navigation.navigate ('confirmation',{countdown : timeSet})}>
               <Text style={styles.confirmButtonText}>
                 Konfirmasi Pembayaran
               </Text>

@@ -16,6 +16,7 @@ import Payment1 from './src/screens/Payment';
 import Payment2 from './src/screens/payed';
 import { ActivityIndicator } from 'react-native';
 import TimerScreen from './src/screens/trial';
+import Confirmation from './src/screens/confirmation';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -105,6 +106,13 @@ function App() {
               }}
               name="trial"
               component={TimerScreen}
+            />
+             <Stack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="confirmation"
+              component={Confirmation}
             />
           </Stack.Navigator>
         </NavigationContainer>

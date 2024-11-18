@@ -65,18 +65,7 @@ const CarDetail = ({route}) => {
         </View>
       </View>
 
-      {/* Dropdown for isDriver */}
-      {/* <View style={styles.driverSelection}>
-          <Text style={styles.sectionTitle}>Pilih Pengemudi</Text>
-          <Picker
-            selectedValue={isDriver}
-            onValueChange={(itemValue) => setIsDriver(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Tidak Ada Pengemudi" value={false} />
-            <Picker.Item label="Ada Pengemudi" value={true} />
-          </Picker>
-        </View> */}
+     
 
       <ScrollView style={styles.scrollView}>
         {/* Car Image */}

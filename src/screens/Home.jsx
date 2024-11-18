@@ -65,6 +65,7 @@ function Home() {
       setModalVisible(true);
        setErrorMessage(cars.message)
         setTimeout(() => {
+          navigation.navigate('SignIn')
           setModalVisible(false);
         }, 1000)
       }
@@ -235,6 +236,13 @@ const styles = StyleSheet.create({
     minWidth: 65,
     marginTop: 5,
     textAlign: 'center',
+  },
+  modalBackground : {
+    width : '90%',
+    backgroundColor : "#fff",
+    elevation : 20,
+    borderRadius : 4,
+    padding : 20,
   },
 });
 

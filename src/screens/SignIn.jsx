@@ -39,7 +39,6 @@ function SignIn() {
  
   useFocusEffect (
     React.useCallback(()=> {
-      console.log("datatoken :",user.token , 'status : ' ,user.status)
       if (user.status === 'success') {
         setModalVisible(true);
         setErrorMessage(null);
@@ -53,6 +52,7 @@ function SignIn() {
        setErrorMessage(user.message)
         setTimeout(() => {
           setModalVisible(false);
+          
         }, 1000)
       }
     },[user])
