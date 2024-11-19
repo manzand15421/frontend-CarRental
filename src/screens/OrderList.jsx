@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   FlatList,
@@ -12,7 +12,9 @@ import OrderList from '../components/OrderList';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import {useNavigation} from '@react-navigation/native';
 import {useFocusEffect} from '@react-navigation/native';
+import { selectUser } from '../redux/reducers/user';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 const Colors = {
   primary: '#A43333',
@@ -85,6 +87,32 @@ const OrderPage = () => {
   };
   const navigation = useNavigation();
   const [order, setOrder] = useState('');
+  const user = useSelector(selectUser)
+  
+
+  const getOrder = async () => {
+
+    try {
+    const res = await axios('http://localhost:3000/api/v1/order/myorder',{
+          headers: {
+            Content: 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        },)
+    const data = res.data
+    setOrder(data)
+    console.log(res)
+    }catch(e) {
+        console.log(e.response.data)
+    }
+  } 
+
+  useFocusEffect(
+React.useCallback(() => {
+    getOrder()
+    console.log("tess",order)
+},[])
+)
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -93,7 +121,7 @@ const OrderPage = () => {
         backgroundColor={Colors.primary}
       />
       <FlatList
-        data={OrderDummy}
+        data={order}
         renderItem={({item}) => (
           <OrderList
             key={item.toString()}
