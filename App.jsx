@@ -17,6 +17,7 @@ import Payment2 from './src/screens/payed';
 import { ActivityIndicator } from 'react-native';
 import TimerScreen from './src/screens/trial';
 import Confirmation from './src/screens/confirmation';
+import OrderPage from './src/screens/OrderList';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -39,6 +40,14 @@ function Tabs() {
         }}
         name="Daftar Mobil"
         component={CarPage}
+      />
+       <Tab.Screen
+        options={{
+          headerShown: true,
+          tabBarIcon: () => <Icon name={'list'} size={25} color="#A43333" />,
+        }}
+        name="Daftar Order"
+        component={OrderPage}
       />
       <Tab.Screen
         options={{

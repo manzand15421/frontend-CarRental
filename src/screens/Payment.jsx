@@ -16,12 +16,16 @@ import {formatCurrency} from '../utils/formatCurrency';
 import {Picker} from '@react-native-picker/picker';
 import ModalPopup from '../components/Modal';
 import {selectUser} from '../redux/reducers/user';
-import {useSelector} from 'react-redux';
+import {selectOrder, getOrder} from '../redux/reducers/order';
+import {useSelector, useDispatch} from 'react-redux';
 import axios from 'axios';
 
 const Payment1 = ({route}) => {
   const {cars} = route.params;
   const user = useSelector(selectUser);
+  const order = useSelector(selectOrder);
+  const dispatch = useDispatch();
+  const [updated, setUpdated] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [selectedBank, setSelectedBank] = useState('');
   const [promoCode, setPromoCode] = useState('');
@@ -63,39 +67,78 @@ const Payment1 = ({route}) => {
   const bank = banks.find(bank => bank.id === selectedBank); // filter bank yang dipilih untuk kirim data ke next screen
 
   const handleNextPayment = async () => {
+    console.log(updated);
     const data = {
       car_id: cars.id,
       start_time: startDate,
       end_time: endDate,
       is_driver: isDriver,
+      payment_method: bank.name,
     };
-    try {
-      const res = await axios.post(
-        'http://192.168.238.158:3000/api/v1/order',
-        data,
-        {
-          headers: {
-            Content: 'application/json',
-            Authorization: `Bearer ${user.token}`,
-          },
-        },
-      );
 
-      if (res.status === 200) {
-        setModalVisible(true);
-        setErrorMessage(null);
-        setTimeout(() => {
-          navigation.navigate('payed', {
-            bank: bank,
-            car: cars,
-            totalPrice: totalPrice,
-            startDate: startDate,
-            endDate: endDate,
-            isDriver: isDriver,
-          });
-        }, 1000);
+    console.log(bank.name);
+    const dataUpdate = {
+      start_time: startDate,
+      end_time: endDate,
+      is_driver: isDriver,
+      payment_method: bank.name,
+    };
+
+    try {
+      // await dispatch(getOrder(res.data.id))
+      // console.log(order)
+
+      if (!order.data) {
+        const res = await axios.post(
+          'http://192.168.238.158:3000/api/v1/order',
+          data,
+          {
+            headers: {
+              Content: 'application/json',
+              Authorization: `Bearer ${user.token}`,
+            },
+          },
+        );
+
+        const datas = res.data;
+        dispatch(getOrder(datas.data.id));
+        if (res.status === 200) {
+          setModalVisible(true);
+          setErrorMessage(null);
+          setUpdated(false);
+          setTimeout(() => {
+            navigation.navigate('payed', {
+              bank: bank,
+              car: cars,
+              totalPrice: totalPrice,
+              startDate: startDate,
+              endDate: endDate,
+              isDriver: isDriver,
+            });
+          }, 1000);
+        }
+      } else {
+        const res = await axios.put(
+          `http://192.168.238.158:3000/api/v1/order/${order.data.id}/updateOrder`,
+          dataUpdate,
+          {
+            headers: {
+              Content: 'application/json',
+              Authorization: `Bearer ${user.token}`,
+            },
+          },
+        );
+        if (res.status === 200) {
+          setModalVisible(true);
+          setErrorMessage(null);
+          setUpdated(true);
+          setTimeout(() => {
+            setModalVisible(false);
+          }, 1000);
+        }
       }
     } catch (e) {
+      console.log(e.response.data.message);
       if (e.response && e.response.data) {
         setErrorMessage(e.response.data.message || 'An error occurred');
       } else if (e.message) {
@@ -308,10 +351,15 @@ const Payment1 = ({route}) => {
                   <Text> {errorMessage} </Text>
                 )}
               </>
+            ) : updated ? (
+              <>
+                <Icon size={32} name={'check-circle'} />
+                <Text>Order Updated</Text>
+              </>
             ) : (
               <>
                 <Icon size={32} name={'check-circle'} />
-                <Text>Berhasil Order</Text>
+                <Text>Order Created</Text>
               </>
             )}
           </View>

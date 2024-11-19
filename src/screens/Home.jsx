@@ -21,6 +21,7 @@ import {useNavigation} from '@react-navigation/native';
 import { useSelector,useDispatch } from 'react-redux';
 import { selectCars,resetCar, getCars } from '../redux/reducers/cars';
 import { selectUser,logout } from '../redux/reducers/user';
+import { resetOrder } from '../redux/reducers/order';
 
 
 const COLORS = {
@@ -53,7 +54,7 @@ function Home() {
   useFocusEffect((
     React.useCallback(() => {
         dispatch(getCars(user.token))
-        console.log(cars.message)
+        dispatch(resetOrder())
     }, [user.token])
   ))
 
