@@ -17,6 +17,7 @@ import {formatCurrency} from '../utils/formatCurrency';
 import {useSelector,useDispatch} from 'react-redux';
 import {selectCars} from '../redux/reducers/cars';
 import { resetOrder } from '../redux/reducers/order';
+import { clearTime } from '../redux/reducers/timer';
 
 
 const CarDetail = ({route}) => {
@@ -100,7 +101,7 @@ const CarDetail = ({route}) => {
         </View>
         <TouchableOpacity
           style={styles.paymentButton}
-          onPress={() =>navigation.navigate('payment' , { cars : car } ,  dispatch(resetOrder()))}>
+          onPress={() =>navigation.navigate('payment' , { cars : car } ,  dispatch(resetOrder()),dispatch(clearTime()))}>
           <Text style={styles.paymentButtonText}>Lanjutkan Pembayaran</Text>
         </TouchableOpacity>
       </View>

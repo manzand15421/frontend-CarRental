@@ -16,12 +16,8 @@ import {formatCurrency} from '../utils/formatCurrency';
 import {Picker} from '@react-native-picker/picker';
 import ModalPopup from '../components/Modal';
 import {selectUser} from '../redux/reducers/user';
-import {
-  selectOrder,
-  postOrder,
-  updateOrder,
-} from '../redux/reducers/order';
-import { selectBank } from '../redux/reducers/timer';
+import {selectOrder, postOrder, updateOrder, getOrderDetail} from '../redux/reducers/order';
+import {selectBank, clear} from '../redux/reducers/timer';
 
 import {useSelector, useDispatch} from 'react-redux';
 
@@ -29,7 +25,7 @@ const Payment1 = ({route}) => {
   const {cars} = route.params;
   const user = useSelector(selectUser);
   const order = useSelector(selectOrder);
-  const reduxBank = useSelector(selectBank)
+  const reduxBank = useSelector(selectBank);
   const dispatch = useDispatch();
   const [updated, setUpdated] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
@@ -89,9 +85,8 @@ const Payment1 = ({route}) => {
       is_driver: isDriver,
       payment_method: bank.name,
     };
-    console.log(order.status);
 
-    if (!order.data || !reduxBank === banks.name) {
+    if (!order.data) {
       dispatch(postOrder({form: data, token: user.token}));
       setUpdated(false);
     } else {
@@ -105,79 +100,18 @@ const Payment1 = ({route}) => {
       setUpdated(true);
       console.log(updated);
     }
-
-    //NOTE : update hit api dengan redux
-
-    // try {
-
-    //   if (!order.data) {
-    //     const res = await axios.post(
-    //       'http://192.168.238.158:3000/api/v1/order',
-    //       data,
-    //       {
-    //         headers: {
-    //           Content: 'application/json',
-    //           Authorization: `Bearer ${user.token}`,
-    //         },
-    //       },
-    //     );
-
-    //     const datas = res.data;
-    //     dispatch(getOrder(datas.data.id));
-    //     if (res.status === 200) {
-    //       setModalVisible(true);
-    //       setErrorMessage(null);
-    //       setUpdated(false);
-    //       setTimeout(() => {
-    //         navigation.navigate('payed', {
-    //           bank: bank,
-    //           car: cars,
-    //           totalPrice: totalPrice,
-    //           startDate: startDate,
-    //           endDate: endDate,
-    //           isDriver: isDriver,
-    //         });
-    //       }, 1000);
-    //     }
-    //   } else {
-    //     const res = await axios.put(
-    //       `http://192.168.238.158:3000/api/v1/order/${order.data.id}/updateOrder`,
-    //       dataUpdate,
-    //       {
-    //         headers: {
-    //           Content: 'application/json',
-    //           Authorization: `Bearer ${user.token}`,
-    //         },
-    //       },
-    //     );
-    //     if (res.status === 200) {
-    //       setModalVisible(true);
-    //       setErrorMessage(null);
-    //       setUpdated(true);
-    //       setTimeout(() => {
-    //         setModalVisible(false);
-    //       }, 1000);
-    //     }
-    //   }
-    // } catch (e) {
-    //   console.log(e.response.data.message);
-    //   if (e.response && e.response.data) {
-    //     setErrorMessage(e.response.data.message || 'An error occurred');
-    //   } else if (e.message) {
-    //     setErrorMessage(e.message);
-    //   } else {
-    //     setErrorMessage('An unexpected error occurred');
-    //   }
-    //   setModalVisible(true);
-    //   setTimeout(() => {
-    //     setModalVisible(false);
-    //   }, 1000);
-    // }
   };
+
+  useEffect(() => {
+    console.log(selectedBank);
+    if (reduxBank !== selectedBank) {
+      dispatch(clear());
+    }
+  }, [reduxBank]);
 
   useFocusEffect(
     React.useCallback(() => {
-      if (order.status === 'success' || !reduxBank === banks.name ) {
+      if (order.status === 'success' || !reduxBank === banks.name) {
         setModalVisible(true);
         setErrorMessage(null);
         setTimeout(() => {

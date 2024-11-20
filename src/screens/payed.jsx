@@ -9,6 +9,7 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
+  BackHandler
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
@@ -34,6 +35,7 @@ export default function Payment2() {
   const {bank, car, totalPrice} = route.params;
 
   
+  
   useFocusEffect(
     React.useCallback(()=> {
   dispatch(setBank(bank.name))
@@ -43,12 +45,14 @@ export default function Payment2() {
   }))
 },[])
 )
+
 useFocusEffect(
   React.useCallback(()=> {
 if(order.status)
 dispatch(statusChange())
 },[order.status])
 )
+
   const clearTimer = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -59,7 +63,6 @@ dispatch(statusChange())
   useEffect(() => {
 
     const adjustedTime = new Date(time.getTime() - 7 * 60 * 60 * 1000); 
-    console.log('Waktu (GMT+7):', adjustedTime.toISOString());
     const target = adjustedTime;
   
     const formattedTime = target.toLocaleString('id-ID', {
@@ -94,7 +97,7 @@ dispatch(statusChange())
     const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
 
     const updateTime = timer - now;
-    console.log(updateTime)
+    
     if (updateTime <= 0) {
       setTimeNow({hours: 0, minutes: 0, seconds: 0});
       clearTimer();
@@ -118,13 +121,13 @@ dispatch(statusChange())
     return () => clearTimer();
   }, [timer]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if(reduxBank !== bank.name)
-        dispatch(clear())
-      
-    },[order.data])
-  )
+
+// useFocusEffect(
+//   React.useCallback(() => {
+//     dispatch(getOrderDetail({id:user.data.id,token:user.token}))
+//   },[order])
+// )
+ 
 
   const steps = [
     {id: 1, title: 'Pilih Metode', active: true, completed: true},
@@ -181,7 +184,10 @@ dispatch(statusChange())
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.goBack()}>
+          onPress={() => {
+            navigation.goBack();
+            dispatch(statusChange())
+            }}>
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
         <View>

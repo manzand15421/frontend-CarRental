@@ -157,7 +157,7 @@ useFocusEffect (
             endDate={ `waktu sewa : ${totalDays} Hari`} // total sewa hari
             price={item.total}
             onPress={() =>
-              navigation.navigate('payed', dispatch(getOrderDetail({id:user.data.id,token:user.token})))
+              navigation.navigate('payed')
             }
           />
         )}
