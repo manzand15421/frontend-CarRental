@@ -14,12 +14,15 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import {formatCurrency} from '../utils/formatCurrency';
 
 //redux
-import {useSelector} from 'react-redux';
+import {useSelector,useDispatch} from 'react-redux';
 import {selectCars} from '../redux/reducers/cars';
+import { resetOrder } from '../redux/reducers/order';
+
 
 const CarDetail = ({route}) => {
   const {carId} = route.params;
   const navigation = useNavigation();
+  const dispatch = useDispatch()
   const cars = useSelector(selectCars);
   const car = cars?.data?.find(car => car.id === carId);
   const formatIDR = useCallback(price => formatCurrency.format(price), []);
@@ -97,7 +100,7 @@ const CarDetail = ({route}) => {
         </View>
         <TouchableOpacity
           style={styles.paymentButton}
-          onPress={() =>navigation.navigate('payment' , { cars : car })}>
+          onPress={() =>navigation.navigate('payment' , { cars : car } ,  dispatch(resetOrder()))}>
           <Text style={styles.paymentButtonText}>Lanjutkan Pembayaran</Text>
         </TouchableOpacity>
       </View>

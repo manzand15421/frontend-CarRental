@@ -11,7 +11,7 @@ export default function OrderList({
   image,
   invoice,
   carName,
-  IsDriver,
+  status,
   startDate,
   endDate,
   price,
@@ -45,7 +45,7 @@ export default function OrderList({
           }}>{carName}</Text>
           <Row gap={5}>
             <Col style={styles.textIcon}>
-              <Text style={styles.capacityText}>{IsDriver}</Text>
+              <Text style={styles.capacityText}>{status}</Text>
             </Col>
            
           </Row>

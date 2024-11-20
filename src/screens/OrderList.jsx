@@ -5,16 +5,22 @@ import {
   StyleSheet,
   SafeAreaView,
   useColorScheme,
-  ActivityIndicatore,
+  Text,
   ImageBackgroundComponent,
+  ActivityIndicator,
 } from 'react-native';
 import OrderList from '../components/OrderList';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import {useNavigation} from '@react-navigation/native';
 import {useFocusEffect} from '@react-navigation/native';
 import { selectUser } from '../redux/reducers/user';
+import { getMyOrder,getOrderDetail, selectOrder } from '../redux/reducers/order';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useSelector,useDispatch } from 'react-redux';
+import ModalPopup from '../components/Modal';
+import Icon from 'react-native-vector-icons/Feather';
+import { convertDate } from '../utils/convertDate';
+
 
 const Colors = {
   primary: '#A43333',
@@ -86,32 +92,35 @@ const OrderPage = () => {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
   const navigation = useNavigation();
-  const [order, setOrder] = useState('');
-  const user = useSelector(selectUser)
+  // const [order, setOrder] = useState('');
+  const dispatch = useDispatch()
+  const user = useSelector(selectUser);
+const order = useSelector(selectOrder)
+const [modalVisibile, setModalVisible] = useState(false);
+const [errorMessage, setErrorMessage] = useState(null);
+
+
   
+useFocusEffect(
+  React.useCallback(() => {
+    dispatch(getMyOrder(user.token))
+   
+  },[user.token])
+)
 
-  const getOrder = async () => {
-
-    try {
-    const res = await axios('http://localhost:3000/api/v1/order/myorder',{
-          headers: {
-            Content: 'application/json',
-            Authorization: `Bearer ${user.token}`,
-          },
-        },)
-    const data = res.data
-    setOrder(data)
-    console.log(res)
-    }catch(e) {
-        console.log(e.response.data)
+useFocusEffect (
+  React.useCallback(()=> {
+    if (order.status === 'failed') {
+      dispatch(logout())
+      dispatch(resetCar())
+    setModalVisible(true);
+     setErrorMessage(order.message)
+      setTimeout(() => {
+        navigation.navigate('SignIn')
+        setModalVisible(false);
+      }, 1000)
     }
-  } 
-
-  useFocusEffect(
-React.useCallback(() => {
-    getOrder()
-    console.log("tess",order)
-},[])
+  },[order])
 )
 
   return (
@@ -120,30 +129,60 @@ React.useCallback(() => {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={Colors.primary}
       />
+       <ModalPopup visible={order.status === 'loading'}>
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <ActivityIndicator />
+          </View>
+        </ModalPopup>
       <FlatList
-        data={order}
-        renderItem={({item}) => (
+        data={order.data?.resources}
+        renderItem={({item}) => {
+          const startTime = new Date(item.start_time).getTime(); // Konversi ke milidetik
+    const endTime = new Date(item.end_time).getTime(); // Konversi ke milidetik
+    const totalDays = Math.round((endTime - startTime) / (1000 * 60 * 60 * 24)); // Konversi ke hari
+            const startDate = new Date(item.start_time).toLocaleDateString('id-ID')
+          
+          return (
           <OrderList
             key={item.toString()}
-            image={{uri: item.img}}
-            invoice={item.invoice}
-            carName={item.carName}
-            isDriver={item.isDriver}
-            startDate={item.startDarte}
-            endDate={item.endDate}
-            price={item.price}
-            // onPress={() =>
-            //   navigation.navigate('carDetail', {
-            //     carId: item.id,
-            //     carName: item.name,
-            //   })
-            // }
+            image={{uri: item.cars.img}}
+            invoice={item.order_no}
+            carName={item.cars.name}
+            status={`Status : ${item.status}`}
+            startDate={`Tanggal Sewa : ${startDate}`}
+            endDate={ `waktu sewa : ${totalDays} Hari`} // total sewa hari
+            price={item.total}
+            onPress={() =>
+              navigation.navigate('payed', dispatch(getOrderDetail({id:user.data.id,token:user.token})))
+            }
           />
         )}
+      }
         keyExtractor={item => item.id}
       />
+      <ModalPopup visible={modalVisibile}>
+        <View style={styles.modalBackground}>
+            <>
+              <Icon size={13} name={'x-circle'} />
+                <Text> {errorMessage} </Text>
+             </>
+        </View>
+      </ModalPopup>
     </SafeAreaView>
   );
 };
 
+const styles = StyleSheet.create ({
+  modalBackground : {
+    width : '90%',
+    backgroundColor : "#fff",
+    elevation : 20,
+    borderRadius : 4,
+    padding : 20,
+  },
+})
 export default OrderPage;

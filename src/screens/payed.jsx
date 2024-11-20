@@ -15,17 +15,19 @@ import {useNavigation} from '@react-navigation/native';
 import {selectUser} from '../redux/reducers/user';
 import {useSelector, useDispatch} from 'react-redux';
 import {setEndTime, selectEndTime, clearTime, setBank, selectBank,clear} from '../redux/reducers/timer';
-import axios from 'axios';
+
+import { statusChange,selectOrder,getOrderDetail } from '../redux/reducers/order';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
   const timer = useSelector(selectEndTime);
   const reduxBank = useSelector(selectBank)
+  const order = useSelector(selectOrder)
   const [timeNow, setTimeNow] = useState({hours: 0, minutes: 0, seconds: 0});
   const [timeSet, setTimeSet] = useState({hours: 12, minutes: 0, seconds: 0});
   const [targetTime, setTargetTime] = useState('');
   const intervalRef = useRef(null);
-
+  const time = new Date(order.data.overdue_time); 
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const route = useRoute();
@@ -35,9 +37,18 @@ export default function Payment2() {
   useFocusEffect(
     React.useCallback(()=> {
   dispatch(setBank(bank.name))
+  dispatch(getOrderDetail({
+    id : order.data.id,
+    token : user.token
+  }))
 },[])
 )
-
+useFocusEffect(
+  React.useCallback(()=> {
+if(order.status)
+dispatch(statusChange())
+},[order.status])
+)
   const clearTimer = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -46,14 +57,11 @@ export default function Payment2() {
   };
 
   useEffect(() => {
-    const now = new Date();
-    const target = new Date(
-      now.getTime() +
-        timeSet.hours * 60 * 60 * 1000 +
-        timeSet.minutes * 60 * 1000 +
-        timeSet.seconds * 1000,
-    );
 
+    const adjustedTime = new Date(time.getTime() - 7 * 60 * 60 * 1000); 
+    console.log('Waktu (GMT+7):', adjustedTime.toISOString());
+    const target = adjustedTime;
+  
     const formattedTime = target.toLocaleString('id-ID', {
       weekday: 'long',
       year: 'numeric',
@@ -61,30 +69,32 @@ export default function Payment2() {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZoneName: 'short',
+      timeZone: 'Asia/Bangkok',
     });
-
+  
     setTargetTime(formattedTime);
-  }, [timeSet]);
+  }, [time]);
+  
 
   useEffect(() => {
     if (!timer) {
-      const now = new Date().getTime();
+      const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
       const newTimer =
-        now +
-        (timeSet.hours * 60 * 60 * 1000 +
-          timeSet.minutes * 60 * 1000 +
-          timeSet.seconds * 1000);
-      dispatch(setEndTime(newTimer));
+        now.getTime() +  time.getTime()
+        // (timeSet.hours * 60 * 60 * 1000 +
+        //   timeSet.minutes * 60 * 1000 +
+        //   timeSet.seconds * 1000);
+       
+      dispatch(setEndTime(time.getTime()));
     }
   }, [dispatch, timer]);
 
   const calculateTime = () => {
     if (!timer) return;
-    const now = new Date().getTime();
+    const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
 
     const updateTime = timer - now;
-
+    console.log(updateTime)
     if (updateTime <= 0) {
       setTimeNow({hours: 0, minutes: 0, seconds: 0});
       clearTimer();
@@ -110,10 +120,10 @@ export default function Payment2() {
 
   useFocusEffect(
     React.useCallback(() => {
-      if(reduxBank !== bank.name){
+      if(reduxBank !== bank.name)
         dispatch(clear())
-      }
-    },[])
+      
+    },[order.data])
   )
 
   const steps = [

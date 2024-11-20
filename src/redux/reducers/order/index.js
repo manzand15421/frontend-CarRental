@@ -1,5 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {getOrder} from './api';
+import {getOrderDetail, getMyOrder, postOrder, updateOrder} from './api';
 
 const initialState = {
   data: null,
@@ -12,24 +12,66 @@ const orderSlice = createSlice({
   initialState,
   reducers: {
     resetOrder: (state) => initialState,
+    statusChange : (state) => {
+state.status = 'idle'
+    }
   },
   extraReducers: builder => {
-    builder.addCase(getOrder.pending, (state, action) => {
+    builder.addCase(getOrderDetail.pending, (state, action) => {
       state.status = 'loading';
     });
-    builder.addCase(getOrder.fulfilled, (state, action) => {
+    builder.addCase(getOrderDetail.fulfilled, (state, action) => {
       state.status = 'success';
       state.data = action.payload.data;
       state.message = action.payload;
     });
-    builder.addCase(getOrder.rejected, (state, action) => {
+    builder.addCase(getOrderDetail.rejected, (state, action) => {
+      state.status = 'failed';
+      state.message = action.payload;
+    });
+
+    builder.addCase(getMyOrder.pending, (state, action) => {
+      state.status = 'loading';
+    });
+    builder.addCase(getMyOrder.fulfilled, (state, action) => {
+      state.status = 'success';
+      state.data = action.payload.data;
+      state.message = action.payload;
+    });
+    builder.addCase(getMyOrder.rejected, (state, action) => {
+      state.status = 'failed';
+      state.message = action.payload;
+    });
+
+    builder.addCase(postOrder.pending, (state, action) => {
+      state.status = 'loading';
+    });
+    builder.addCase(postOrder.fulfilled, (state, action) => {
+      state.status = 'success';
+      state.data = action.payload.data;
+      state.message = action.payload;
+    });
+    builder.addCase(postOrder.rejected, (state, action) => {
+      state.status = 'failed';
+      state.message = action.payload;
+    });
+
+    builder.addCase(updateOrder.pending, (state, action) => {
+      state.status = 'loading';
+    });
+    builder.addCase(updateOrder.fulfilled, (state, action) => {
+      state.status = 'success';
+      state.data = action.payload.data;
+      state.message = action.payload;
+    });
+    builder.addCase(updateOrder.rejected, (state, action) => {
       state.status = 'failed';
       state.message = action.payload;
     });
   },
 });
 
-export const selectOrder = (state) => state.order
-export const {resetOrder} = orderSlice.actions
-export {getOrder}
-export default orderSlice.reducer
+export const selectOrder = (state) => state.order;
+export const {resetOrder,statusChange} = orderSlice.actions;
+export {getOrderDetail, getMyOrder, postOrder, updateOrder};
+export default orderSlice.reducer;

@@ -16,14 +16,20 @@ import {formatCurrency} from '../utils/formatCurrency';
 import {Picker} from '@react-native-picker/picker';
 import ModalPopup from '../components/Modal';
 import {selectUser} from '../redux/reducers/user';
-import {selectOrder, getOrder} from '../redux/reducers/order';
+import {
+  selectOrder,
+  postOrder,
+  updateOrder,
+} from '../redux/reducers/order';
+import { selectBank } from '../redux/reducers/timer';
+
 import {useSelector, useDispatch} from 'react-redux';
-import axios from 'axios';
 
 const Payment1 = ({route}) => {
   const {cars} = route.params;
   const user = useSelector(selectUser);
   const order = useSelector(selectOrder);
+  const reduxBank = useSelector(selectBank)
   const dispatch = useDispatch();
   const [updated, setUpdated] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
@@ -67,7 +73,7 @@ const Payment1 = ({route}) => {
   const bank = banks.find(bank => bank.id === selectedBank); // filter bank yang dipilih untuk kirim data ke next screen
 
   const handleNextPayment = async () => {
-    console.log(updated);
+    console.log(user.token);
     const data = {
       car_id: cars.id,
       start_time: startDate,
@@ -83,75 +89,118 @@ const Payment1 = ({route}) => {
       is_driver: isDriver,
       payment_method: bank.name,
     };
+    console.log(order.status);
 
-    try {
-      // await dispatch(getOrder(res.data.id))
-      // console.log(order)
-
-      if (!order.data) {
-        const res = await axios.post(
-          'http://192.168.238.158:3000/api/v1/order',
-          data,
-          {
-            headers: {
-              Content: 'application/json',
-              Authorization: `Bearer ${user.token}`,
-            },
-          },
-        );
-
-        const datas = res.data;
-        dispatch(getOrder(datas.data.id));
-        if (res.status === 200) {
-          setModalVisible(true);
-          setErrorMessage(null);
-          setUpdated(false);
-          setTimeout(() => {
-            navigation.navigate('payed', {
-              bank: bank,
-              car: cars,
-              totalPrice: totalPrice,
-              startDate: startDate,
-              endDate: endDate,
-              isDriver: isDriver,
-            });
-          }, 1000);
-        }
-      } else {
-        const res = await axios.put(
-          `http://192.168.238.158:3000/api/v1/order/${order.data.id}/updateOrder`,
-          dataUpdate,
-          {
-            headers: {
-              Content: 'application/json',
-              Authorization: `Bearer ${user.token}`,
-            },
-          },
-        );
-        if (res.status === 200) {
-          setModalVisible(true);
-          setErrorMessage(null);
-          setUpdated(true);
-          setTimeout(() => {
-            setModalVisible(false);
-          }, 1000);
-        }
-      }
-    } catch (e) {
-      console.log(e.response.data.message);
-      if (e.response && e.response.data) {
-        setErrorMessage(e.response.data.message || 'An error occurred');
-      } else if (e.message) {
-        setErrorMessage(e.message);
-      } else {
-        setErrorMessage('An unexpected error occurred');
-      }
-      setModalVisible(true);
-      setTimeout(() => {
-        setModalVisible(false);
-      }, 1000);
+    if (!order.data || !reduxBank === banks.name) {
+      dispatch(postOrder({form: data, token: user.token}));
+      setUpdated(false);
+    } else {
+      dispatch(
+        updateOrder({
+          id: user.data.id,
+          form: dataUpdate,
+          token: user.token,
+        }),
+      );
+      setUpdated(true);
+      console.log(updated);
     }
+
+    //NOTE : update hit api dengan redux
+
+    // try {
+
+    //   if (!order.data) {
+    //     const res = await axios.post(
+    //       'http://192.168.238.158:3000/api/v1/order',
+    //       data,
+    //       {
+    //         headers: {
+    //           Content: 'application/json',
+    //           Authorization: `Bearer ${user.token}`,
+    //         },
+    //       },
+    //     );
+
+    //     const datas = res.data;
+    //     dispatch(getOrder(datas.data.id));
+    //     if (res.status === 200) {
+    //       setModalVisible(true);
+    //       setErrorMessage(null);
+    //       setUpdated(false);
+    //       setTimeout(() => {
+    //         navigation.navigate('payed', {
+    //           bank: bank,
+    //           car: cars,
+    //           totalPrice: totalPrice,
+    //           startDate: startDate,
+    //           endDate: endDate,
+    //           isDriver: isDriver,
+    //         });
+    //       }, 1000);
+    //     }
+    //   } else {
+    //     const res = await axios.put(
+    //       `http://192.168.238.158:3000/api/v1/order/${order.data.id}/updateOrder`,
+    //       dataUpdate,
+    //       {
+    //         headers: {
+    //           Content: 'application/json',
+    //           Authorization: `Bearer ${user.token}`,
+    //         },
+    //       },
+    //     );
+    //     if (res.status === 200) {
+    //       setModalVisible(true);
+    //       setErrorMessage(null);
+    //       setUpdated(true);
+    //       setTimeout(() => {
+    //         setModalVisible(false);
+    //       }, 1000);
+    //     }
+    //   }
+    // } catch (e) {
+    //   console.log(e.response.data.message);
+    //   if (e.response && e.response.data) {
+    //     setErrorMessage(e.response.data.message || 'An error occurred');
+    //   } else if (e.message) {
+    //     setErrorMessage(e.message);
+    //   } else {
+    //     setErrorMessage('An unexpected error occurred');
+    //   }
+    //   setModalVisible(true);
+    //   setTimeout(() => {
+    //     setModalVisible(false);
+    //   }, 1000);
+    // }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (order.status === 'success' || !reduxBank === banks.name ) {
+        setModalVisible(true);
+        setErrorMessage(null);
+        setTimeout(() => {
+          setModalVisible(false);
+          navigation.navigate('payed', {
+            bank: bank,
+            car: cars,
+            totalPrice: totalPrice,
+            startDate: startDate,
+            endDate: endDate,
+            isDriver: isDriver,
+          });
+        }, 1000);
+      } else if (order.status === 'failed') {
+        setErrorMessage(order.message);
+        setModalVisible(true);
+        setTimeout(() => {
+          setModalVisible(false);
+        }, 1000);
+      }
+    }, [order]),
+  );
+
   const steps = [
     {id: 1, title: 'Pilih Metode'},
     {id: 2, title: 'Bayar'},
