@@ -3,14 +3,14 @@ import {createAsyncThunk} from '@reduxjs/toolkit';
 
 export const getCars = createAsyncThunk(
   'user/getCars',
-  async ({page,token},{rejectWithValue}) => {
+  async (token,{rejectWithValue}) => {
     try {
       const response = await axios.get(
         'http://192.168.238.158:3000/api/v1/cars',
         {
-          params:{
-            page: page,
-        },
+        //   params:{
+        //     page: page,
+        // },
           headers: {
             Content: 'application/json',
             Authorization: `Bearer ${token}`,

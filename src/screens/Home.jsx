@@ -50,16 +50,17 @@ function Home() {
   const dispatch = useDispatch()
 
 
-const fetchCars = () => {
-  const page = 1;
-  if(!cars.data?.length || page > cars.data?.page && cars.status === 'idle'){
-    dispatch(getCars({page: page , token : user.token}))
-  }
-}
+// const fetchCars = () => {
+//   const page = 1;
+//   if(!cars.data?.length || page > cars.data?.page && cars.status === 'idle'){
+//     dispatch(getCars({page: page , token : user.token}))
+//   }
+// }
   useFocusEffect((
     React.useCallback(() => {
-      console.log(cars.message?.page)
-       fetchCars()
+      // console.log(cars.message?.page)
+      //  fetchCars()
+      dispatch(getCars(user.token))
         dispatch(resetOrder())
     }, [user.token])
   ))
@@ -70,7 +71,7 @@ const fetchCars = () => {
         dispatch(logout())
         dispatch(resetCar())
       setModalVisible(true);
-       setErrorMessage(cars.message)
+       setErrorMessage(cars?.message)
         setTimeout(() => {
           navigation.navigate('SignIn')
           setModalVisible(false);
@@ -166,8 +167,8 @@ const fetchCars = () => {
             passengers={5}
             baggage={4}
             price={item.price}
-            onEndReached={fetchCars}
-            onEndReachedThreshold={0.8}
+            // onEndReached={fetchCars}
+            // onEndReachedThreshold={0.8}
             onPress={() => navigation.navigate('carDetail', {carId: item.id} )}
           />
         )}

@@ -33,11 +33,12 @@ export default function Payment2() {
   const [timeSet, setTimeSet] = useState({hours: 12, minutes: 0, seconds: 0});
   const [targetTime, setTargetTime] = useState('');
   const intervalRef = useRef(null);
-  const time = new Date(order.data.overdue_time);
+  const time = new Date(order.data?.overdue_time);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const formatIDR = useCallback(price => formatCurrency.format(price), []);
-  const totalPrice = formatIDR(order.data.total);
+  const totalPrice = formatIDR(order.data?.total);
+  const [cancel,setCancel] = useState(false)
 
   useFocusEffect(
     React.useCallback(() => {
@@ -85,6 +86,7 @@ export default function Payment2() {
       setTimeNow({hours: 0, minutes: 0, seconds: 0});
       clearTimer();
       dispatch(clearTime());
+      setCancel(true)
       return;
     }
 
@@ -120,11 +122,18 @@ const CancelOrder = async () => {
 if(cancel.status === 200){
   navigation.navigate('homeTabs' ,{screen:'Daftar Order'})
 }
-console.log(cancel)
   }catch (e) {
     console.log(e.response.data)
   }
 }
+
+useFocusEffect(
+  React.useCallback(()=> {
+    if(cancel === true){
+    CancelOrder()
+    }
+  },[cancel])
+)
   const renderStepIndicator = () => (
     <View style={styles.stepContainer}>
       {steps.map((step, index) => (
@@ -272,6 +281,13 @@ console.log(cancel)
             <TouchableOpacity style={styles.orderListButton}  onPress={CancelOrder}>
               <Text style={styles.orderListButtonText}>
                Cancel Order
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.orderListButton}  
+            // onPress={()=> navigation.navigate('payment')}
+              >
+              <Text style={styles.orderListButtonText}>
+               Coming Soon Update Order
               </Text>
             </TouchableOpacity>
           </View>
