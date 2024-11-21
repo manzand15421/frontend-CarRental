@@ -34,7 +34,7 @@ state.status = 'idle'
       state.status = 'loading';
     });
     builder.addCase(getMyOrder.fulfilled, (state, action) => {
-      state.status = 'success';
+      state.status = 'idle';
       state.data = action.payload.data;
       state.message = action.payload;
     });

@@ -1,5 +1,6 @@
 import {useFocusEffect, useRoute} from '@react-navigation/native';
 import React, {useEffect, useState, useRef} from 'react';
+import {useCallback} from 'react';
 
 import {
   View,
@@ -9,49 +10,39 @@ import {
   StyleSheet,
   SafeAreaView,
   Image,
-  BackHandler
+  BackHandler,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {selectUser} from '../redux/reducers/user';
 import {useSelector, useDispatch} from 'react-redux';
-import {setEndTime, selectEndTime, clearTime, setBank, selectBank,clear} from '../redux/reducers/timer';
-
-import { statusChange,selectOrder,getOrderDetail } from '../redux/reducers/order';
+import {
+  setEndTime,
+  selectEndTime,
+  clearTime,
+} from '../redux/reducers/timer';
+import {formatCurrency} from '../utils/formatCurrency';
+import {statusChange, selectOrder} from '../redux/reducers/order';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
   const timer = useSelector(selectEndTime);
-  const reduxBank = useSelector(selectBank)
-  const order = useSelector(selectOrder)
+  const order = useSelector(selectOrder);
   const [timeNow, setTimeNow] = useState({hours: 0, minutes: 0, seconds: 0});
   const [timeSet, setTimeSet] = useState({hours: 12, minutes: 0, seconds: 0});
   const [targetTime, setTargetTime] = useState('');
   const intervalRef = useRef(null);
-  const time = new Date(order.data.overdue_time); 
+  const time = new Date(order.data.overdue_time);
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const route = useRoute();
-  const {bank, car, totalPrice} = route.params;
+  const formatIDR = useCallback(price => formatCurrency.format(price), []);
+  const totalPrice = formatIDR(order.data.total);
 
-  
-  
   useFocusEffect(
-    React.useCallback(()=> {
-  dispatch(setBank(bank.name))
-  dispatch(getOrderDetail({
-    id : order.data.id,
-    token : user.token
-  }))
-},[])
-)
-
-useFocusEffect(
-  React.useCallback(()=> {
-if(order.status)
-dispatch(statusChange())
-},[order.status])
-)
+    React.useCallback(() => {
+      if (order.status) dispatch(statusChange());
+    }, [order.status]),
+  );
 
   const clearTimer = () => {
     if (intervalRef.current) {
@@ -61,10 +52,9 @@ dispatch(statusChange())
   };
 
   useEffect(() => {
-
-    const adjustedTime = new Date(time.getTime() - 7 * 60 * 60 * 1000); 
+    const adjustedTime = new Date(time.getTime() - 7 * 60 * 60 * 1000);
     const target = adjustedTime;
-  
+
     const formattedTime = target.toLocaleString('id-ID', {
       weekday: 'long',
       year: 'numeric',
@@ -74,30 +64,22 @@ dispatch(statusChange())
       minute: '2-digit',
       timeZone: 'Asia/Bangkok',
     });
-  
+
     setTargetTime(formattedTime);
   }, [time]);
-  
 
   useEffect(() => {
     if (!timer) {
-      const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
-      const newTimer =
-        now.getTime() +  time.getTime()
-        // (timeSet.hours * 60 * 60 * 1000 +
-        //   timeSet.minutes * 60 * 1000 +
-        //   timeSet.seconds * 1000);
-       
       dispatch(setEndTime(time.getTime()));
     }
-  }, [dispatch, timer]);
+  }, [dispatch, time]);
 
   const calculateTime = () => {
     if (!timer) return;
     const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
 
     const updateTime = timer - now;
-    
+
     if (updateTime <= 0) {
       setTimeNow({hours: 0, minutes: 0, seconds: 0});
       clearTimer();
@@ -113,7 +95,6 @@ dispatch(statusChange())
   };
 
   useEffect(() => {
-  
     if (timer) calculateTime();
     intervalRef.current = setInterval(() => {
       calculateTime();
@@ -121,13 +102,11 @@ dispatch(statusChange())
     return () => clearTimer();
   }, [timer]);
 
-
-// useFocusEffect(
-//   React.useCallback(() => {
-//     dispatch(getOrderDetail({id:user.data.id,token:user.token}))
-//   },[order])
-// )
- 
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     dispatch(getOrderDetail({id:user.data.id,token:user.token}))
+  //   },[order.data])
+  // )
 
   const steps = [
     {id: 1, title: 'Pilih Metode', active: true, completed: true},
@@ -186,13 +165,13 @@ dispatch(statusChange())
           style={styles.backButton}
           onPress={() => {
             navigation.goBack();
-            dispatch(statusChange())
-            }}>
+            dispatch(statusChange());
+          }}>
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>{bank.subtitle}</Text>
-          <Text style={styles.orderId}>Order ID: xxxxxxxx</Text>
+          <Text style={styles.headerTitle}>{`Status : ${order.data.status}`}</Text>
+          <Text style={styles.orderId}>{order.data.order_no}x</Text>
         </View>
       </View>
 
@@ -215,9 +194,12 @@ dispatch(statusChange())
 
         {/* Car Details */}
         <View style={styles.carDetails}>
-          <Image source={{uri: car.img}} style={styles.carImage} />
+          <Image
+            source={{uri: order.data?.cars?.img}}
+            style={styles.carImage}
+          />
           <View style={styles.carInfo}>
-            <Text style={styles.carName}>{car.name}</Text>
+            <Text style={styles.carName}>{order.data?.cars?.name}</Text>
             <View style={styles.carMetrics}>
               <View style={styles.metric}>
                 <Icon name="users" size={16} color="#6b7280" />
@@ -237,9 +219,9 @@ dispatch(statusChange())
         <View style={styles.transferSection}>
           <Text style={styles.sectionTitle}>Lakukan Transfer ke</Text>
           <View style={styles.bankCard}>
-            <Text style={styles.bankName}>{bank.name}</Text>
-            <Text style={styles.bankSubtitle}>{bank.subtitle}</Text>
-            <Text style={styles.bankNote}>{user.data.fullname}</Text>
+            <Text style={styles.bankName}>{order.data.payment_method}</Text>
+            <Text style={styles.bankSubtitle}>Nama Pemilik :</Text>
+            <Text style={styles.bankNote}>{order.data.users.fullname}</Text>
           </View>
 
           <View style={styles.accountSection}>
@@ -268,7 +250,11 @@ dispatch(statusChange())
 
           {/* Bottom Buttons */}
           <View style={styles.bottomSection2}>
-            <TouchableOpacity style={styles.confirmButton} onPress={() => navigation.navigate ('confirmation',{countdown : timeSet})}>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={() =>
+                navigation.navigate('confirmation', {countdown: timeSet})
+              }>
               <Text style={styles.confirmButtonText}>
                 Konfirmasi Pembayaran
               </Text>

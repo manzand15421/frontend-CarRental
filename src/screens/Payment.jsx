@@ -16,8 +16,13 @@ import {formatCurrency} from '../utils/formatCurrency';
 import {Picker} from '@react-native-picker/picker';
 import ModalPopup from '../components/Modal';
 import {selectUser} from '../redux/reducers/user';
-import {selectOrder, postOrder, updateOrder, getOrderDetail} from '../redux/reducers/order';
-import {selectBank, clear} from '../redux/reducers/timer';
+import {
+  selectOrder,
+  postOrder,
+  updateOrder,
+  getOrderDetail,
+} from '../redux/reducers/order';
+import {selectBankName, clear} from '../redux/reducers/timer';
 
 import {useSelector, useDispatch} from 'react-redux';
 
@@ -25,7 +30,7 @@ const Payment1 = ({route}) => {
   const {cars} = route.params;
   const user = useSelector(selectUser);
   const order = useSelector(selectOrder);
-  const reduxBank = useSelector(selectBank);
+  const reduxBank = useSelector(selectBankName);
   const dispatch = useDispatch();
   const [updated, setUpdated] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
@@ -92,7 +97,7 @@ const Payment1 = ({route}) => {
     } else {
       dispatch(
         updateOrder({
-          id: user.data.id,
+          id: order.data.id,
           form: dataUpdate,
           token: user.token,
         }),

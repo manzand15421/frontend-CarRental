@@ -13,10 +13,10 @@ import OrderList from '../components/OrderList';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import {useNavigation} from '@react-navigation/native';
 import {useFocusEffect} from '@react-navigation/native';
-import { selectUser } from '../redux/reducers/user';
+import { selectUser,logout } from '../redux/reducers/user';
 import { getMyOrder,getOrderDetail, selectOrder } from '../redux/reducers/order';
-import axios from 'axios';
 import { useSelector,useDispatch } from 'react-redux';
+import { clearTime } from '../redux/reducers/timer';
 import ModalPopup from '../components/Modal';
 import Icon from 'react-native-vector-icons/Feather';
 import { convertDate } from '../utils/convertDate';
@@ -98,14 +98,20 @@ const OrderPage = () => {
 const order = useSelector(selectOrder)
 const [modalVisibile, setModalVisible] = useState(false);
 const [errorMessage, setErrorMessage] = useState(null);
-
-
   
 useFocusEffect(
   React.useCallback(() => {
     dispatch(getMyOrder(user.token))
-   
+    dispatch(clearTime())
   },[user.token])
+)
+useFocusEffect (
+  React.useCallback(()=> {
+    if (order.status === 'success') {
+   
+      navigation.navigate('payed')
+    }
+  },[order])
 )
 
 useFocusEffect (
@@ -157,7 +163,7 @@ useFocusEffect (
             endDate={ `waktu sewa : ${totalDays} Hari`} // total sewa hari
             price={item.total}
             onPress={() =>
-              navigation.navigate('payed')
+              dispatch(getOrderDetail({id:item.id,token:user.token}))
             }
           />
         )}
