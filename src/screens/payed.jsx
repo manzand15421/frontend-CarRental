@@ -165,7 +165,6 @@ export default function Payment2() {
           style={styles.backButton}
           onPress={() => {
             navigation.goBack();
-            dispatch(statusChange());
           }}>
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>

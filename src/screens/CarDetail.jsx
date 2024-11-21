@@ -69,8 +69,6 @@ const CarDetail = ({route}) => {
         </View>
       </View>
 
-     
-
       <ScrollView style={styles.scrollView}>
         {/* Car Image */}
         <View style={styles.imageContainer}>

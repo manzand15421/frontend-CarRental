@@ -66,6 +66,17 @@ const Payment1 = ({route}) => {
     if (selectedDate) setEndDate(selectedDate);
   };
 
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`; // Format YYYY-MM-DD
+  };
+//convert ke string dari tanggal biasa
+  const start_time = formatDate(new Date(startDate))
+  const end_time = formatDate(new Date(endDate))
+
+
   const banks = [
     {id: 'bca', name: 'BCA', subtitle: 'BCA Transfer'},
     {id: 'bni', name: 'BNI', subtitle: 'BNI Transfer'},
@@ -74,16 +85,16 @@ const Payment1 = ({route}) => {
   const bank = banks.find(bank => bank.id === selectedBank); // filter bank yang dipilih untuk kirim data ke next screen
 
   const handleNextPayment = async () => {
-    console.log(user.token);
+    
     const data = {
       car_id: cars.id,
-      start_time: startDate,
-      end_time: endDate,
+      start_time: start_time,
+      end_time: end_time,
       is_driver: isDriver,
       payment_method: bank.name,
     };
 
-    console.log(bank.name);
+   
     const dataUpdate = {
       start_time: startDate,
       end_time: endDate,
@@ -103,12 +114,12 @@ const Payment1 = ({route}) => {
         }),
       );
       setUpdated(true);
-      console.log(updated);
+    
     }
   };
 
   useEffect(() => {
-    console.log(selectedBank);
+    
     if (reduxBank !== selectedBank) {
       dispatch(clear());
     }
