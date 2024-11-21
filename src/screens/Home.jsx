@@ -50,10 +50,16 @@ function Home() {
   const dispatch = useDispatch()
 
 
-
+const fetchCars = () => {
+  const page = 1;
+  if(!cars.data?.length || page > cars.data?.page && cars.status === 'idle'){
+    dispatch(getCars({page: page , token : user.token}))
+  }
+}
   useFocusEffect((
     React.useCallback(() => {
-        dispatch(getCars(user.token))
+      console.log(cars.message?.page)
+       fetchCars()
         dispatch(resetOrder())
     }, [user.token])
   ))
@@ -160,9 +166,12 @@ function Home() {
             passengers={5}
             baggage={4}
             price={item.price}
+            onEndReached={fetchCars}
+            onEndReachedThreshold={0.8}
             onPress={() => navigation.navigate('carDetail', {carId: item.id} )}
           />
         )}
+       
         keyExtractor={item => item.id}
       />
        <ModalPopup visible={modalVisibile}>

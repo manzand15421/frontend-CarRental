@@ -19,7 +19,7 @@ import { useSelector,useDispatch } from 'react-redux';
 import { clearTime } from '../redux/reducers/timer';
 import ModalPopup from '../components/Modal';
 import Icon from 'react-native-vector-icons/Feather';
-import { convertDate } from '../utils/convertDate';
+import { resetCar } from '../redux/reducers/cars';
 
 
 const Colors = {
@@ -108,7 +108,6 @@ useFocusEffect(
 useFocusEffect (
   React.useCallback(()=> {
     if (order.status === 'success') {
-   
       navigation.navigate('payed')
     }
   },[order])
@@ -151,7 +150,7 @@ useFocusEffect (
     const endTime = new Date(item.end_time).getTime(); // Konversi ke milidetik
     const totalDays = Math.round((endTime - startTime) / (1000 * 60 * 60 * 24)); // Konversi ke hari
             const startDate = new Date(item.start_time).toLocaleDateString('id-ID')
-          
+            const isDisabled = item.status === 'canceled' || item.status === 'paid'
           return (
           <OrderList
             key={item.toString()}
@@ -162,9 +161,8 @@ useFocusEffect (
             startDate={`Tanggal Sewa : ${startDate}`}
             endDate={ `waktu sewa : ${totalDays} Hari`} // total sewa hari
             price={item.total}
-            onPress={() =>
-              dispatch(getOrderDetail({id:item.id,token:user.token}))
-            }
+            onPress={() => !isDisabled && dispatch(getOrderDetail({ id: item.id, token: user.token }))}
+           disabled={isDisabled} // Disable button if canceled
           />
         )}
       }

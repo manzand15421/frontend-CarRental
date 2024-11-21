@@ -15,16 +15,18 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import {formatCurrency} from '../utils/formatCurrency';
 import {Picker} from '@react-native-picker/picker';
 import ModalPopup from '../components/Modal';
-import {selectUser} from '../redux/reducers/user';
+import {logout, resetState, selectUser} from '../redux/reducers/user';
 import {
   selectOrder,
   postOrder,
   updateOrder,
   getOrderDetail,
+  resetOrder,
 } from '../redux/reducers/order';
 import {selectBankName, clear} from '../redux/reducers/timer';
 
 import {useSelector, useDispatch} from 'react-redux';
+import { resetCar } from '../redux/reducers/cars';
 
 const Payment1 = ({route}) => {
   const {cars} = route.params;
@@ -145,6 +147,17 @@ const Payment1 = ({route}) => {
         setErrorMessage(order.message);
         setModalVisible(true);
         setTimeout(() => {
+          setModalVisible(false);
+        }, 1000);
+      }
+      else if (order.message === 'jwt expired') {
+        setErrorMessage(order.message);
+        setModalVisible(true);
+        dispatch(logout());
+        dispatch(resetCar())
+        dispatch(resetOrder())
+        setTimeout(() => {
+          navigation.navigate('SignIn')
           setModalVisible(false);
         }, 1000);
       }

@@ -23,6 +23,7 @@ import {
 } from '../redux/reducers/timer';
 import {formatCurrency} from '../utils/formatCurrency';
 import {statusChange, selectOrder} from '../redux/reducers/order';
+import axios from 'axios';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
@@ -102,18 +103,28 @@ export default function Payment2() {
     return () => clearTimer();
   }, [timer]);
 
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     dispatch(getOrderDetail({id:user.data.id,token:user.token}))
-  //   },[order.data])
-  // )
-
   const steps = [
     {id: 1, title: 'Pilih Metode', active: true, completed: true},
     {id: 2, title: 'Bayar', active: true, completed: false},
     {id: 3, title: 'Tiket', active: false, completed: false},
   ];
 
+const CancelOrder = async () => {
+  try {
+    const cancel = await axios.put(`http://192.168.238.158:3000/api/v1/order/${order.data.id}/cancelOrder`,{
+  headers: {
+    Content: 'application/json',
+    Authorization: `Bearer ${user.token}`,
+  },
+})
+if(cancel.status === 200){
+  navigation.navigate('homeTabs' ,{screen:'Daftar Order'})
+}
+console.log(cancel)
+  }catch (e) {
+    console.log(e.response.data)
+  }
+}
   const renderStepIndicator = () => (
     <View style={styles.stepContainer}>
       {steps.map((step, index) => (
@@ -169,8 +180,8 @@ export default function Payment2() {
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>{`Status : ${order.data.status}`}</Text>
-          <Text style={styles.orderId}>{order.data.order_no}x</Text>
+          <Text style={styles.headerTitle}>{`Status : ${order.data?.status}`}</Text>
+          <Text style={styles.orderId}>{order.data?.order_no}x</Text>
         </View>
       </View>
 
@@ -218,9 +229,9 @@ export default function Payment2() {
         <View style={styles.transferSection}>
           <Text style={styles.sectionTitle}>Lakukan Transfer ke</Text>
           <View style={styles.bankCard}>
-            <Text style={styles.bankName}>{order.data.payment_method}</Text>
+            <Text style={styles.bankName}>{order.data?.payment_method}</Text>
             <Text style={styles.bankSubtitle}>Nama Pemilik :</Text>
-            <Text style={styles.bankNote}>{order.data.users.fullname}</Text>
+            <Text style={styles.bankNote}>{order.data?.users?.fullname}</Text>
           </View>
 
           <View style={styles.accountSection}>
@@ -258,9 +269,9 @@ export default function Payment2() {
                 Konfirmasi Pembayaran
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.orderListButton}>
+            <TouchableOpacity style={styles.orderListButton}  onPress={CancelOrder}>
               <Text style={styles.orderListButtonText}>
-                Lihat Daftar Pesanan
+               Cancel Order
               </Text>
             </TouchableOpacity>
           </View>
