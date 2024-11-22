@@ -61,7 +61,7 @@ const ProfileScreen = () => {
             <Icon name="user" size={40} color="#fff" />
           </View>
           <Text style={styles.profileName}>{user.data?.fullname}</Text>
-          <TouchableOpacity style={styles.editButton}>
+          <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('Edit Your Profile')}>
             <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
@@ -71,7 +71,7 @@ const ProfileScreen = () => {
           <Text style={styles.sectionTitle}> About Your Account</Text>
           {renderInfoItem("mail", "Email", user.data?.email)}
           {renderInfoItem("phone", "Phone Number", user.phone)}
-          {renderInfoItem("calendar", "Noreg", user.memberSince)}
+          {renderInfoItem("home", "Address", user.memberSince)}
         </View>
 
         {/* Additional Options */}

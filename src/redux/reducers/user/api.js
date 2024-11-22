@@ -1,14 +1,14 @@
 import axios from "axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-
+import { apiClient } from "../../../config/axios";
 
 export const postLogin = createAsyncThunk(
     'user/postLogin',
     async (payload, {rejectWithValue}) => {
      
         try {
-            const response = await axios.post(
-              'http://192.168.238.158:3000/api/v1/auth/signin',
+            const response = await apiClient.post(
+              '/auth/signin',
                payload ,{
                 headers : {
                     'Content' : 'application/json' 
@@ -39,8 +39,8 @@ export const postRegister = createAsyncThunk(
   async (payload, {rejectWithValue}) => {
    
       try {
-          const response = await axios.post(
-            'http://192.168.238.158:3000/api/v1/auth/signup',
+          const response = await apiClient.post(
+            '/auth/signup',
              payload ,{
               headers : {
                   'Content' : 'application/json' 
@@ -70,7 +70,7 @@ export const getProfile = createAsyncThunk(
     async (token,{rejectWithValue}) =>  {
 
         try {
-            const response = await axios.get('http://192.168.238.158:3000/api/v1/auth/whoami',
+            const response = await apiClient.get('/auth/whoami',
                {
                 headers : {
                     'Content' : 'application/json' ,

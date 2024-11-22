@@ -76,3 +76,6 @@ yarn.lock
 
 #node
 node_modules
+.env
+google-services.json
+

@@ -1,12 +1,13 @@
 import axios from 'axios';
 import {createAsyncThunk} from '@reduxjs/toolkit';
+import { apiClient } from "../../../config/axios";
 
 export const getOrderDetail = createAsyncThunk(
   'order/getOrderDetail',
   async ({id, token}, {rejectWithValue}) => {
     try {
-      const response = await axios.get(
-        `http://192.168.238.158:3000/api/v1/order/${id}`,
+      const response = await apiClient.get(
+        `/order/${id}`,
         {
           headers: {
             Content: 'application/json',
@@ -30,8 +31,8 @@ export const getMyOrder = createAsyncThunk(
   'order/getMyOrder',
   async (token, {rejectWithValue}) => {
     try {
-      const response = await axios.get(
-        'http://192.168.238.158:3000/api/v1/order/myorder',
+      const response = await apiClient.get(
+        '/order/myorder',
         {
           headers: {
             Content: 'application/json',
@@ -56,8 +57,8 @@ export const postOrder = createAsyncThunk(
   'order/postOrder',
   async ({form, token}, {rejectWithValue}) => {
     try {
-      const response = await axios.post(
-        'http://192.168.238.158:3000/api/v1/order',
+      const response = await apiClient.post(
+        '/order',
         form,
         {
           headers: {
@@ -82,8 +83,8 @@ export const updateOrder = createAsyncThunk(
   'order/updateOrder',
   async ({id,form, token}, {rejectWithValue}) => {
     try {
-      const response = await axios.put(
-        `http://192.168.238.158:3000/api/v1/order/${id}/updateOrder`,form,
+      const response = await apiClient.put(
+        `/order/${id}/updateOrder`,form,
         {
           headers: {
             Content: 'application/json',

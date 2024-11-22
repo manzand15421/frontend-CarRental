@@ -13,6 +13,7 @@ import {Link, useNavigation,useFocusEffect} from '@react-navigation/native';
 import ModalPopup from '../components/Modal';
 import { useDispatch,useSelector } from 'react-redux';
 import { postRegister,resetState,selectUser } from '../redux/reducers/user';
+import GoogleButton from '../components/googleButton';
 
 const initialFormState = {
   fullname: '',
@@ -120,6 +121,7 @@ function SignUp() {
           </Link>
         </Text>
       </View>
+      <GoogleButton/>
       <ModalPopup visible={modalVisibile}>
         <View style={styles.modalBackground}>
           {errorMessage !== null ? (

@@ -15,9 +15,8 @@ import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import ModalPopup from '../components/Modal';
-
 import { useDispatch, useSelector } from 'react-redux';
-import { getCars, resetCar, selectCars } from '../redux/reducers/cars';
+import { getCars, resetCar, selectCars,getCarsDetail } from '../redux/reducers/cars';
 import { selectUser } from '../redux/reducers/user';
 
 const Colors = {
@@ -66,6 +65,7 @@ const CarPage = () => {
   };
 
   const navigation = useNavigation();
+  const dispatch = useDispatch()
   const car = useSelector(selectCars);
   const user = useSelector(selectUser);
 
@@ -112,7 +112,7 @@ const CarPage = () => {
               navigation.navigate('carDetail', {
                 carId: item.id,
                 carName: item.name,
-              })
+              },dispatch(getCarsDetail({id : item.id , token : user.token})))
             }
           />
         )}

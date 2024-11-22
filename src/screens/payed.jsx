@@ -21,6 +21,7 @@ import {
   selectEndTime,
   clearTime,
 } from '../redux/reducers/timer';
+import { getCarsDetail } from '../redux/reducers/cars';
 import {formatCurrency} from '../utils/formatCurrency';
 import {statusChange, selectOrder} from '../redux/reducers/order';
 import axios from 'axios';
@@ -284,10 +285,10 @@ useFocusEffect(
               </Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.orderListButton}  
-            // onPress={()=> navigation.navigate('payment')}
+            onPress={()=> navigation.navigate('payment', dispatch(getCarsDetail({id : order.data.cars.id, token : user.token})))}
               >
               <Text style={styles.orderListButtonText}>
-               Coming Soon Update Order
+              Update Order
               </Text>
             </TouchableOpacity>
           </View>

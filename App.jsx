@@ -14,10 +14,14 @@ import SignUp from './src/screens/SignUp';
 import carDetail from './src/screens/CarDetail';
 import Payment1 from './src/screens/Payment';
 import Payment2 from './src/screens/payed';
+import { navigationRef } from './src/config/rootNavigation';
 import { ActivityIndicator } from 'react-native';
 import TimerScreen from './src/screens/trial';
 import Confirmation from './src/screens/confirmation';
 import OrderPage from './src/screens/OrderList';
+import { setupAxiosInterceptors } from './src/config/axios';
+import EditProfile from './src/screens/editProfile';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -65,7 +69,7 @@ function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={<ActivityIndicator />} persistor={persistor}>
-        <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
           <Stack.Navigator>
             <Stack.Screen
               options={{
@@ -123,11 +127,20 @@ function App() {
               name="confirmation"
               component={Confirmation}
             />
+            <Stack.Screen
+              options={{
+                headerShown: true,
+              }}
+              name="Edit Your Profile"
+              component={EditProfile}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </PersistGate>
     </Provider>
   );
 }
+
+setupAxiosInterceptors(store);
 
 export default App;

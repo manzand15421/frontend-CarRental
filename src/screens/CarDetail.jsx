@@ -25,7 +25,7 @@ const CarDetail = ({route}) => {
   const navigation = useNavigation();
   const dispatch = useDispatch()
   const cars = useSelector(selectCars);
-  const car = cars?.data?.find(car => car.id === carId);
+  // const car = cars?.data?.find(car => car.id === carId);
   const formatIDR = useCallback(price => formatCurrency.format(price), []);
 
   const md = `## Include
@@ -41,7 +41,7 @@ const CarDetail = ({route}) => {
   - Jika overtime lebih dari 12 jam akan ada tambahan biaya Rp 20.000/jam
   - Tidak termasuk akomodasi penginapan`.toString();
 
-  if (!car) {
+  if (!cars) {
     return <Text>Loading...</Text>;
   }
 
@@ -55,7 +55,7 @@ const CarDetail = ({route}) => {
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>{car.name}</Text>
+          <Text style={styles.headerTitle}>{cars.data.name}</Text>
           <View style={styles.headerInfo}>
             <View style={styles.infoItem}>
               <Icon name="users" size={16} color="#6b7280" />
@@ -73,7 +73,7 @@ const CarDetail = ({route}) => {
         {/* Car Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{uri: car.img}}
+            source={{uri: cars.data.img}}
             style={styles.carImage}
             resizeMode="contain"
           />
@@ -95,11 +95,11 @@ const CarDetail = ({route}) => {
       {/* Bottom Fixed Section */}
       <View style={styles.bottomSection}>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>{formatIDR(car.price)}</Text>
+          <Text style={styles.price}>{formatIDR(cars.data.price)}</Text>
         </View>
         <TouchableOpacity
           style={styles.paymentButton}
-          onPress={() =>navigation.navigate('payment' , { cars : car } ,  dispatch(resetOrder()),dispatch(clearTime()))}>
+          onPress={() =>navigation.navigate('payment' , dispatch(resetOrder()),dispatch(clearTime()))}>
           <Text style={styles.paymentButtonText}>Lanjutkan Pembayaran</Text>
         </TouchableOpacity>
       </View>

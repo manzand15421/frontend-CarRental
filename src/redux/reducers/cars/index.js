@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getCars } from "./api";
+import { getCars, getCarsDetail } from "./api";
 
 
 const initialState = {
@@ -30,6 +30,20 @@ const carSlice = createSlice({
             state.status = 'failed'
             state.message = action.payload
         })
+        
+        builder.addCase(getCarsDetail.pending,(state,action) => {
+            state.status = 'loading'
+        })
+        builder.addCase(getCarsDetail.fulfilled,(state,action) => {
+            state.status = 'success'
+            state.data = action.payload.data
+            state.message = action.payload
+       
+        })
+        builder.addCase(getCarsDetail.rejected,(state,action)=> {
+            state.status = 'failed'
+            state.message = action.payload
+        })
     }
 
 })
@@ -37,5 +51,5 @@ const carSlice = createSlice({
 
 export const selectCars = (state) => state.cars
 export const {resetCar} = carSlice.actions
-export {getCars}
+export {getCars,getCarsDetail}
 export default carSlice.reducer

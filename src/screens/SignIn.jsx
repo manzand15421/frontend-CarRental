@@ -9,6 +9,8 @@ import ModalPopup from '../components/Modal';
 //redux
 import { useDispatch,useSelector } from 'react-redux';
 import { postLogin,selectUser,resetState} from '../redux/reducers/user';
+import GoogleButton from '../components/googleButton';
+
 
 const initialFormState = {
   email: '',
@@ -108,6 +110,7 @@ function SignIn() {
         color="#3D7B3F"
         title="Sign In"
       />
+      
 
       <View>
         <Text style={styles.message}>
@@ -117,6 +120,7 @@ function SignIn() {
           </Link>
         </Text>
       </View>
+      <GoogleButton/>
       <ModalPopup visible={modalVisibile}>
         <View style={styles.modalBackground}>
           {errorMessage !== null ? (

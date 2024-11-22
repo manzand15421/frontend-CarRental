@@ -14,14 +14,14 @@ import Button from '../components/Button';
 import Icon from 'react-native-vector-icons/Feather';
 import CarList from '../components/CarList';
 import ModalPopup from '../components/Modal';
-
+import GeoLoc from '../components/geoLocation';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
-
 import {useNavigation} from '@react-navigation/native';
 import { useSelector,useDispatch } from 'react-redux';
-import { selectCars,resetCar, getCars } from '../redux/reducers/cars';
+import { selectCars,resetCar, getCars,getCarsDetail } from '../redux/reducers/cars';
 import { selectUser,logout } from '../redux/reducers/user';
 import { resetOrder } from '../redux/reducers/order';
+
 
 
 const COLORS = {
@@ -31,14 +31,19 @@ const COLORS = {
   lighter: '#ffffff',
 };
 
-const ButtonIcon = ({icon, title}) => (
-  <Button>
-    <View style={styles.iconWrapper}>
-      <Icon name={icon} size={25} color="#fff" />
-    </View>
-    <Text style={styles.iconText}>{title}</Text>
-  </Button>
-);
+const ButtonIcon = ({ icon, title }) => {
+  const isDarkMode = useColorScheme() === 'dark';
+  const textColor = isDarkMode ? '#fff' : '#000';
+
+  return (
+    <Button>
+      <View style={styles.iconWrapper}>
+        <Icon name={icon} size={25} color={'#fff'} />
+      </View>
+      <Text style={[styles.iconText, { color: textColor }]}>{title}</Text>
+    </Button>
+  );
+};
 
 function Home() {
   const cars = useSelector(selectCars)
@@ -117,9 +122,10 @@ function Home() {
                     Hi,
                     {headerName}
                   </Text>
-                  <Text style={styles.headerTextLocation}>
+                  {/* <Text style={styles.headerTextLocation}>
                     From Tegal Company
-                  </Text>
+                  </Text> */}
+                  <GeoLoc/>
                 </View>
                 <View>
                   <Image
@@ -169,7 +175,7 @@ function Home() {
             price={item.price}
             // onEndReached={fetchCars}
             // onEndReachedThreshold={0.8}
-            onPress={() => navigation.navigate('carDetail', {carId: item.id} )}
+            onPress={() => navigation.navigate('carDetail', {carId: item.id},dispatch(getCarsDetail({id : item.id , token : user.token})) )}
           />
         )}
        

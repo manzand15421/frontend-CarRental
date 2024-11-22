@@ -26,11 +26,12 @@ import {
 import {selectBankName, clear} from '../redux/reducers/timer';
 
 import {useSelector, useDispatch} from 'react-redux';
-import { resetCar } from '../redux/reducers/cars';
+import { resetCar, selectCars } from '../redux/reducers/cars';
 
 const Payment1 = ({route}) => {
-  const {cars} = route.params;
+  // const {cars} = route.params;
   const user = useSelector(selectUser);
+  const cars = useSelector(selectCars)
   const order = useSelector(selectOrder);
   const reduxBank = useSelector(selectBankName);
   const dispatch = useDispatch();
@@ -52,7 +53,7 @@ const Payment1 = ({route}) => {
 
   const diffTime = Math.abs(endDate - startDate);
   const rentalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  const totalPrice = formatIDR(cars.price * rentalDays);
+  const totalPrice = formatIDR(cars.data.price * rentalDays);
 
   const [isDriver, setIsDriver] = useState(false);
   const [modalVisibile, setModalVisible] = useState(false);
@@ -89,7 +90,7 @@ const Payment1 = ({route}) => {
   const handleNextPayment = async () => {
     
     const data = {
-      car_id: cars.id,
+      car_id: cars.data.id,
       start_time: start_time,
       end_time: end_time,
       is_driver: isDriver,
@@ -98,8 +99,8 @@ const Payment1 = ({route}) => {
 
    
     const dataUpdate = {
-      start_time: startDate,
-      end_time: endDate,
+      start_time: start_time,
+      end_time: end_time,
       is_driver: isDriver,
       payment_method: bank.name,
     };
@@ -224,9 +225,9 @@ const Payment1 = ({route}) => {
       <ScrollView style={styles.content}>
         {/* Car Details */}
         <View style={styles.carDetails}>
-          <Image source={{uri: cars.img}} style={styles.carImage} />
+          <Image source={{uri: cars.data.img}} style={styles.carImage} />
           <View style={styles.carInfo}>
-            <Text style={styles.carName}>{cars.name}</Text>
+            <Text style={styles.carName}>{cars.data.name}</Text>
             <View style={styles.carMetrics}>
               <View style={styles.metric}>
                 <Icon name="users" size={16} color="#6b7280" />
@@ -238,7 +239,7 @@ const Payment1 = ({route}) => {
               </View>
             </View>
           </View>
-          <Text style={styles.price}>{formatIDR(cars.price)}</Text>
+          <Text style={styles.price}>{formatIDR(cars.data.price)}</Text>
         </View>
         <View style={styles.datePickerContainer}>
           <Text style={styles.sectionTitle}>Select Dates</Text>
@@ -289,17 +290,10 @@ const Payment1 = ({route}) => {
               selectedValue={isDriver}
               onValueChange={itemValue => setIsDriver(itemValue)}
               style={styles.picker}>
-              <Picker.Item label="Tidak Ada Pengemudi" value={false} />
-              <Picker.Item label="Ada Pengemudi" value={true} />
+              <Picker.Item label="Lepas Kunci" value={false} />
+              <Picker.Item label="Dengan Driver" value={true} />
             </Picker>
 
-            {/* Arrow Icon for Dropdown */}
-            <Icon
-              name="chevron-down"
-              size={20}
-              color="#6b7280"
-              style={styles.pickerIcon}
-            />
           </View>
         </View>
 
