@@ -12,13 +12,15 @@ import {
 import { launchImageLibrary } from 'react-native-image-picker';
 import { selectUser } from '../redux/reducers/user';
 import { useSelector } from 'react-redux';
-import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+import { apiClient } from '../config/axios';
+import { useDispatch } from 'react-redux';
 
 const initialFormState = {
     fullname : '',
-    email: '',
+    // email: '',
     phone_number : '',
-    img :''
+    avatar :''
   };
 
 export default function EditProfile() {
@@ -29,6 +31,8 @@ export default function EditProfile() {
   const [avatar, setAvatar] = useState(null);
   const [formData, setFormData] = useState(initialFormState);
   const user = useSelector(selectUser)
+  const dispatch = useDispatch()
+  const navigation = useNavigation()
 
   const handleChange = (val, name) => {
     setFormData({
@@ -37,9 +41,9 @@ export default function EditProfile() {
      
     });
   };
-useEffect(()=> {
-    console.log(user.data.id)
-},[formData])
+// useEffect(()=> {
+//     console.log(user.data)
+// },[formData])
 
   const pickImage = () => {
     const options = {
@@ -61,23 +65,27 @@ useEffect(()=> {
       }
 
       const imageData = `data:${selectedImage.type};base64,${selectedImage.base64}`;
-      handleChange(imageData,'img');
+      handleChange(imageData,'avatar');
 
     });
   };
 
-  const UpdateProfile = () => {
-console.log(user)
+  const UpdateProfile = async () => {
+
     try{
-        const res = axios.post(`http://192.123.12.3:3000/api/v1/updateUser/${user.data.id}`,formData,{
+        const res = await apiClient.put(`/users/updateUser/${user.data.id}`,formData,{
             headers: {
                 Content: 'application/json',
                 Authorization: `Bearer ${user.token}`,
               },
         })
-console.log(res)
+       if(res.data.status === "success"){
+        dispatch(selectUser)
+        navigation.navigate('homeTabs', {screen : "Akun"} )
+       }
+
     }catch (e){
-console.log(e)
+return console.log(e)
     }
   } 
 
@@ -116,7 +124,7 @@ console.log(e)
         />
       </View>
 
-      <View style={styles.inputContainer}>
+      {/* <View style={styles.inputContainer}>
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
@@ -126,7 +134,7 @@ console.log(e)
           placeholderTextColor={'#A5A5A5'}
           keyboardType="email-address"
         />
-      </View>
+      </View> */}
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Phone Number</Text>

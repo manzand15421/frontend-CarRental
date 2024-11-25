@@ -13,14 +13,13 @@ import OrderList from '../components/OrderList';
 import FocusAwareStatusBar from '../components/FocusAwareStatusBar';
 import {useNavigation} from '@react-navigation/native';
 import {useFocusEffect} from '@react-navigation/native';
-import { selectUser,logout } from '../redux/reducers/user';
-import { getMyOrder,getOrderDetail, selectOrder } from '../redux/reducers/order';
-import { useSelector,useDispatch } from 'react-redux';
-import { clearTime } from '../redux/reducers/timer';
+import {selectUser, logout} from '../redux/reducers/user';
+import {getMyOrder, getOrderDetail, selectOrder} from '../redux/reducers/order';
+import {useSelector, useDispatch} from 'react-redux';
+import {clearTime} from '../redux/reducers/timer';
 import ModalPopup from '../components/Modal';
 import Icon from 'react-native-vector-icons/Feather';
-import { resetCar } from '../redux/reducers/cars';
-
+import {resetCar} from '../redux/reducers/cars';
 
 const Colors = {
   primary: '#A43333',
@@ -84,8 +83,6 @@ const OrderDummy = [
   },
 ];
 
-
-
 const OrderPage = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -93,40 +90,40 @@ const OrderPage = () => {
   };
   const navigation = useNavigation();
   // const [order, setOrder] = useState('');
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const user = useSelector(selectUser);
-const order = useSelector(selectOrder)
-const [modalVisibile, setModalVisible] = useState(false);
-const [errorMessage, setErrorMessage] = useState(null);
-  
-useFocusEffect(
-  React.useCallback(() => {
-    dispatch(getMyOrder(user.token))
-    dispatch(clearTime())
-  },[user.token])
-)
-useFocusEffect (
-  React.useCallback(()=> {
-    if (order.status === 'success') {
-      navigation.navigate('payed')
-    }
-  },[order])
-)
+  const order = useSelector(selectOrder);
+  const [modalVisibile, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
-useFocusEffect (
-  React.useCallback(()=> {
-    if (order.status === 'failed') {
-      dispatch(logout())
-      dispatch(resetCar())
-    setModalVisible(true);
-     setErrorMessage(order.message)
-      setTimeout(() => {
-        navigation.navigate('SignIn')
-        setModalVisible(false);
-      }, 1000)
-    }
-  },[order])
-)
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(getMyOrder(user.token));
+      dispatch(clearTime());
+    }, [user.token]),
+  );
+  useFocusEffect(
+    React.useCallback(() => {
+      if (order.status === 'success') {
+        navigation.navigate('payed');
+      }
+    }, [order]),
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (order.status === 'failed') {
+        dispatch(logout());
+        dispatch(resetCar());
+        setModalVisible(true);
+        setErrorMessage(order.message);
+        setTimeout(() => {
+          navigation.navigate('SignIn');
+          setModalVisible(false);
+        }, 1000);
+      }
+    }, [order]),
+  );
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -134,59 +131,68 @@ useFocusEffect (
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={Colors.primary}
       />
-       <ModalPopup visible={order.status === 'loading'}>
-          <View style={{
+      <ModalPopup visible={order.status === 'loading'}>
+        <View
+          style={{
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-            <ActivityIndicator />
-          </View>
-        </ModalPopup>
+          <ActivityIndicator />
+        </View>
+      </ModalPopup>
       <FlatList
         data={order.data?.resources}
         renderItem={({item}) => {
           const startTime = new Date(item.start_time).getTime(); // Konversi ke milidetik
-    const endTime = new Date(item.end_time).getTime(); // Konversi ke milidetik
-    const totalDays = Math.round((endTime - startTime) / (1000 * 60 * 60 * 24)); // Konversi ke hari
-            const startDate = new Date(item.start_time).toLocaleDateString('id-ID')
-            const isDisabled = item.status === 'canceled' || item.status === 'paid'
+          const endTime = new Date(item.end_time).getTime(); // Konversi ke milidetik
+          const totalDays = Math.round(
+            (endTime - startTime) / (1000 * 60 * 60 * 24),
+          ); // Konversi ke hari
+          const startDate = new Date(item.start_time).toLocaleDateString(
+            'id-ID',
+          );
+          const isDisabled =
+            item.status === 'canceled' || item.status === 'paid';
           return (
-          <OrderList
-            key={item.toString()}
-            image={{uri: item.cars.img}}
-            invoice={item.order_no}
-            carName={item.cars.name}
-            status={`Status : ${item.status}`}
-            startDate={`Tanggal Sewa : ${startDate}`}
-            endDate={ `waktu sewa : ${totalDays} Hari`} // total sewa hari
-            price={item.total}
-            onPress={() => !isDisabled && dispatch(getOrderDetail({ id: item.id, token: user.token }))}
-           disabled={isDisabled} // Disable button if canceled
-          />
-        )}
-      }
+            <OrderList
+              key={item.toString()}
+              image={{uri: item.cars.img}}
+              invoice={item.order_no}
+              carName={item.cars.name}
+              status={`Status : ${item.status}`}
+              startDate={`Tanggal Sewa : ${startDate}`}
+              endDate={`waktu sewa : ${totalDays} Hari`} // total sewa hari
+              price={item.total}
+              onPress={() =>
+                !isDisabled &&
+                dispatch(getOrderDetail({id: item.id, token: user.token}))
+              }
+              disabled={isDisabled} // Disable button if canceled
+            />
+          );
+        }}
         keyExtractor={item => item.id}
       />
       <ModalPopup visible={modalVisibile}>
         <View style={styles.modalBackground}>
-            <>
-              <Icon size={13} name={'x-circle'} />
-                <Text> {errorMessage} </Text>
-             </>
+          <>
+            <Icon size={13} name={'x-circle'} />
+            <Text> {errorMessage} </Text>
+          </>
         </View>
       </ModalPopup>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create ({
-  modalBackground : {
-    width : '90%',
-    backgroundColor : "#fff",
-    elevation : 20,
-    borderRadius : 4,
-    padding : 20,
+const styles = StyleSheet.create({
+  modalBackground: {
+    width: '90%',
+    backgroundColor: '#fff',
+    elevation: 20,
+    borderRadius: 4,
+    padding: 20,
   },
-})
+});
 export default OrderPage;

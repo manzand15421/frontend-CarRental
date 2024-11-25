@@ -24,7 +24,7 @@ import {
 import { getCarsDetail } from '../redux/reducers/cars';
 import {formatCurrency} from '../utils/formatCurrency';
 import {statusChange, selectOrder} from '../redux/reducers/order';
-import axios from 'axios';
+import { apiClient } from '../config/axios';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
@@ -86,7 +86,7 @@ export default function Payment2() {
     if (updateTime <= 0) {
       setTimeNow({hours: 0, minutes: 0, seconds: 0});
       clearTimer();
-      dispatch(clearTime());
+      // dispatch(clearTime());
       setCancel(true)
       return;
     }
@@ -114,7 +114,7 @@ export default function Payment2() {
 
 const CancelOrder = async () => {
   try {
-    const cancel = await axios.put(`http://192.168.238.158:3000/api/v1/order/${order.data.id}/cancelOrder`,{
+    const cancel = await apiClient.put(`/order/${order.data.id}/cancelOrder`,{
   headers: {
     Content: 'application/json',
     Authorization: `Bearer ${user.token}`,
@@ -130,6 +130,7 @@ if(cancel.status === 200){
 
 useFocusEffect(
   React.useCallback(()=> {
+  
     if(cancel === true){
     CancelOrder()
     }

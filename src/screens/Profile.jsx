@@ -1,12 +1,17 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Image, ScrollView ,TouchableOpacity,SafeAreaView } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import Button from '../components/Button';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Feather';
 import { useSelector, useDispatch } from 'react-redux';
-import { getProfile , selectUser, logout, resetState} from '../redux/reducers/user';
+import { useFocusEffect } from '@react-navigation/native';
+import { getProfile, selectUser, logout, resetState } from '../redux/reducers/user';
 import { resetCar } from '../redux/reducers/cars';
+import {
+  GoogleSignin,
+} from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
 
 const ProfileScreen = () => {
 
@@ -15,31 +20,47 @@ const ProfileScreen = () => {
   const dispatch = useDispatch()
 
   const handleLogout = async () => {
-  dispatch(logout())
-  dispatch(resetCar())
-  };
+  
+  try {
+    const currentUser = auth().currentUser; // Check if there's a signed-in user
 
-  const handleRegister =()=> {
-   dispatch(resetState())
-   navigation.navigate('SignUp')
+    if (currentUser) {
+      await GoogleSignin.revokeAccess(); // Revoke Google access
+      await auth().signOut(); // Log out from Firebase Auth
+      dispatch(logout());
+      dispatch(resetCar());
+      console.log('User logged out successfully');
+    } else {
+      console.log('No user currently signed in');
+    }
+  } catch (e) {
+    console.error('Error during logout: ', e);
+  }
+};
+
+
+  const handleRegister = () => {
+    dispatch(resetState())
+    navigation.navigate('SignUp')
   }
 
   const getUser = async () => {
-    if(user.token){
-    await dispatch(getProfile(user.token))
+    if (user.token) {
+      await dispatch(getProfile(user.token))
+    }
+
   }
-   
-  }
 
-  useEffect(() => {
-    if(!user.token) {
-      handleLogout()
-    } 
-    getUser()
-  }, [user.token]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!user.token) {
+        handleLogout()
+      }
+      getUser()
+    }, [user.token]))
 
 
-  const renderInfoItem = (icon, label,value,) => (
+  const renderInfoItem = (icon, label, value,) => (
     <View style={styles.infoItem}>
       <Icon name={icon} size={24} color="#6b7280" style={styles.infoIcon} />
       <View>
@@ -48,52 +69,54 @@ const ProfileScreen = () => {
       </View>
     </View>
   );
-  
-  
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {user.login ? (
         <ScrollView style={styles.scrollView}>
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarPlaceholder}>
-            <Icon name="user" size={40} color="#fff" />
+          {/* Profile Section */}
+          <View style={styles.profileSection}>
+            <View>
+              <Image
+                style={styles.avatarPlaceholder}
+                source={{ uri: user.data.avatar }}
+              />
+            </View>
+            <Text style={styles.profileName}>{user.data?.fullname}</Text>
+            <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('Edit Your Profile')}>
+              <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.profileName}>{user.data?.fullname}</Text>
-          <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('Edit Your Profile')}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Account Information */}
-        <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}> About Your Account</Text>
-          {renderInfoItem("mail", "Email", user.data?.email)}
-          {renderInfoItem("phone", "Phone Number", user.phone)}
-          {renderInfoItem("home", "Address", user.memberSince)}
-        </View>
+          {/* Account Information */}
+          <View style={styles.infoSection}>
+            <Text style={styles.sectionTitle}> About Your Account</Text>
+            {renderInfoItem("mail", "Email", user.data?.email)}
+            {renderInfoItem("phone", "Phone Number", user.data?.phone_number)}
+            {renderInfoItem("home", "Address", user.data?.address)}
+          </View>
 
-        {/* Additional Options */}
-        <View style={styles.optionsSection}>
-          <TouchableOpacity style={styles.optionItem}>
-            <Icon name="lock" size={24} color="#6b7280" style={styles.optionIcon} />
-            <Text style={styles.optionText}>Change Password</Text>
+          {/* Additional Options */}
+          <View style={styles.optionsSection}>
+            <TouchableOpacity style={styles.optionItem}>
+              <Icon name="lock" size={24} color="#6b7280" style={styles.optionIcon} />
+              <Text style={styles.optionText}>Change Password</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionItem}>
+              <Icon name="bell" size={24} color="#6b7280" style={styles.optionIcon} />
+              <Text style={styles.optionText}>Notifications</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.optionItem}>
+              <Icon name="help-circle" size={24} color="#6b7280" style={styles.optionIcon} />
+              <Text style={styles.optionText}>Help</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Log Out</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionItem}>
-            <Icon name="bell" size={24} color="#6b7280" style={styles.optionIcon} />
-            <Text style={styles.optionText}>Notifications</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.optionItem}>
-            <Icon name="help-circle" size={24} color="#6b7280" style={styles.optionIcon} />
-            <Text style={styles.optionText}>Help</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>Log Out</Text>
-      </TouchableOpacity>
-      </ScrollView>
-      
+        </ScrollView>
+
       ) : (
         <View style={styles.detailsContainer}>
           <View style={styles.cardContainer}>

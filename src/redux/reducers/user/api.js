@@ -92,3 +92,26 @@ export const getProfile = createAsyncThunk(
     }
    
 )
+
+export const GoogleLogin = createAsyncThunk(
+    'user/googleLogin',
+    async (payload,{rejectWithValue}) =>  {
+
+        try {
+            const response = await apiClient.post('/auth/googleSignIn',payload)
+
+                const data = response.data
+                return data;
+
+        } catch(error){
+    if(error.response.data) {
+        return rejectWithValue(error.response.data.message)
+
+    }
+    else {
+        return rejectWithValue('Something When Wrong')
+    }
+        }
+    }
+   
+)

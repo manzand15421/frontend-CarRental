@@ -1,5 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {getProfile, postLogin, postRegister} from './api';
+import {getProfile, GoogleLogin, postLogin, postRegister} from './api';
 
 const initialState = {
   data: null,
@@ -64,6 +64,20 @@ const userSlice = createSlice({
       state.status = 'failed';
       state.message = action.payload;
     });
+    builder.addCase(GoogleLogin.pending, (state, action) => {
+      state.status = 'loading';
+    });
+    builder.addCase(GoogleLogin.fulfilled, (state, action) => {
+      state.status = 'success';
+      state.data = action.payload.data.user;
+      state.token = action.payload.data.token;
+      state.login = true;
+      state.message = action.message;
+    });
+    builder.addCase(GoogleLogin.rejected, (state, action) => {
+      state.status = 'failed';
+      state.message = action.payload;
+    });
   },
 });
 
@@ -71,5 +85,5 @@ const userSlice = createSlice({
 
 export const selectUser = state => state.user; // selector untuk mengambil state user
 export const {logout, resetState} = userSlice.actions; // action untuk logout
-export {postLogin, getProfile,postRegister}; // action untuk panggil api,jadi ketika import index ini sudah include apinya
+export {postLogin, getProfile,postRegister,GoogleLogin}; // action untuk panggil api,jadi ketika import index ini sudah include apinya
 export default userSlice.reducer; // user reducer untuk bisa dipanggil ke store
