@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { selectOrder, payment } from '../redux/reducers/order';
+import { selectUser } from '../redux/reducers/user';
+import { useDispatch, useSelector } from 'react-redux';
+import { useFocusEffect , useNavigation} from '@react-navigation/native';
+
 
 export default function PaymentConfirmation() {
   const [timeLeft, setTimeLeft] = useState(595); // 9 minutes and 55 seconds
   const [image, setImage] = useState(null);
+  const user = useSelector(selectUser);
+  const order = useSelector(selectOrder);
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -24,27 +33,46 @@ export default function PaymentConfirmation() {
   const pickImage = () => {
     const options = {
       mediaType: 'photo',
-      includeBase64: false,
-      maxHeight: 2000,
-      maxWidth: 2000,
+      includeBase64: true,
+      
     };
 
     launchImageLibrary(options, (response) => {
+
+      const selectedImage = response.assets[0];
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
         console.log('ImagePicker Error: ', response.error);
-      } else {
-        const source = { uri: response.assets[0].uri };
-        setImage(source);
-      }
+      }   
+      const imageData = `data:${selectedImage.type};base64,${selectedImage.base64}`;
+      setImage(imageData);
+
     });
   };
 
+  const handlePayment = () => {
+    if (image) {
+      dispatch(payment({
+        id: order.data?.id,
+        receipt: image,
+        token: user.token
+      }));
+    }
+
+    
+  }
+useFocusEffect(
+  useCallback(() => {
+    if(order.status === 'success'){
+      navigation.navigate('homeTabs', { screen: 'Home' });
+    }
+  }, [order.status])
+)
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Konfirmasi Pembayaran</Text>
-      
+
       <View style={styles.messageContainer}>
         <Text style={styles.message}>
           Terima kasih telah melakukan konfirmasi pembayaran. Pembayaranmu akan segera kami cek tunggu kurang lebih 10 menit untuk mendapatkan konfirmasi.
@@ -57,26 +85,35 @@ export default function PaymentConfirmation() {
         <Text style={styles.uploadSubtitle}>
           Untuk membantu kami lebih cepat melakukan pengecekan, Kamu bisa upload bukti bayarmu
         </Text>
-        
+
         <TouchableOpacity onPress={pickImage} style={styles.imagePickerContainer}>
           {image ? (
-            <Image source={image} style={styles.selectedImage} />
+            <Image source={{ uri: image }} style={styles.selectedImage} />
           ) : (
             <View style={styles.placeholderContainer}>
-              <Image 
+              <Image
                 // source={require('./assets/placeholder-icon.png')}
                 style={styles.placeholderIcon}
               />
+              <Text>Pick an image</Text>
             </View>
           )}
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.uploadButton}>
+      <TouchableOpacity
+        onPress={handlePayment}
+        style={[
+          styles.uploadButton,
+          !image && styles.uploadButtonDisabled,
+        ]}
+        disabled={!image} 
+      >
         <Text style={styles.uploadButtonText}>Upload</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.viewOrderButton}>
+
+      <TouchableOpacity style={styles.viewOrderButton} onPress={() => navigation.navigate('homeTabs', {screen : 'Daftar Order'})}>
         <Text style={styles.viewOrderText}>Lihat Daftar Pesanan</Text>
       </TouchableOpacity>
     </View>
@@ -123,6 +160,11 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 16,
   },
+  uploadButtonDisabled: {
+    backgroundColor: '#cccccc',  
+    borderColor: '#999999',
+  },
+
   imagePickerContainer: {
     width: '100%',
     height: 200,

@@ -1,5 +1,5 @@
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import React, {useState, useCallback, useEffect} from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,23 +12,22 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {formatCurrency} from '../utils/formatCurrency';
-import {Picker} from '@react-native-picker/picker';
+import { formatCurrency } from '../utils/formatCurrency';
+import { Picker } from '@react-native-picker/picker';
 import ModalPopup from '../components/Modal';
-import {logout, resetState, selectUser} from '../redux/reducers/user';
+import { logout, resetState, selectUser } from '../redux/reducers/user';
 import {
   selectOrder,
   postOrder,
   updateOrder,
-  getOrderDetail,
   resetOrder,
 } from '../redux/reducers/order';
-import {selectBankName, clear} from '../redux/reducers/timer';
+import { selectBankName, clear } from '../redux/reducers/timer';
 
-import {useSelector, useDispatch} from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { resetCar, selectCars } from '../redux/reducers/cars';
 
-const Payment1 = ({route}) => {
+const Payment1 = ({ route }) => {
   // const {cars} = route.params;
   const user = useSelector(selectUser);
   const cars = useSelector(selectCars)
@@ -75,29 +74,29 @@ const Payment1 = ({route}) => {
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`; // Format YYYY-MM-DD
   };
-//convert ke string dari tanggal biasa
+  //convert ke string dari tanggal biasa
   const start_time = formatDate(new Date(startDate))
   const end_time = formatDate(new Date(endDate))
 
 
   const banks = [
-    {id: 'bca', name: 'BCA', subtitle: 'BCA Transfer'},
-    {id: 'bni', name: 'BNI', subtitle: 'BNI Transfer'},
-    {id: 'mandiri', name: 'Mandiri', subtitle: 'Mandiri Transfer'},
+    { id: 'bca', name: 'BCA', subtitle: 'BCA Transfer' },
+    { id: 'bni', name: 'BNI', subtitle: 'BNI Transfer' },
+    { id: 'mandiri', name: 'Mandiri', subtitle: 'Mandiri Transfer' },
   ];
   const bank = banks.find(bank => bank.id === selectedBank); // filter bank yang dipilih untuk kirim data ke next screen
 
   const handleNextPayment = async () => {
-    
+
     const data = {
-      car_id: cars.data.id,
+      car_id: cars.data?.id,
       start_time: start_time,
       end_time: end_time,
       is_driver: isDriver,
       payment_method: bank.name,
     };
 
-   
+
     const dataUpdate = {
       start_time: start_time,
       end_time: end_time,
@@ -106,7 +105,7 @@ const Payment1 = ({route}) => {
     };
 
     if (!order.data) {
-      dispatch(postOrder({form: data, token: user.token}));
+      dispatch(postOrder({ form: data, token: user.token }));
       setUpdated(false);
     } else {
       dispatch(
@@ -117,16 +116,22 @@ const Payment1 = ({route}) => {
         }),
       );
       setUpdated(true);
-    
+
     }
   };
 
   useEffect(() => {
-    
+
     if (reduxBank !== selectedBank) {
       dispatch(clear());
     }
   }, [reduxBank]);
+
+  useEffect(() => {
+    if (cars.data?.isDriver) {
+      setIsDriver(true); 
+    }
+  }, [cars.data?.isDriver]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -166,9 +171,9 @@ const Payment1 = ({route}) => {
   );
 
   const steps = [
-    {id: 1, title: 'Pilih Metode'},
-    {id: 2, title: 'Bayar'},
-    {id: 3, title: 'Tiket'},
+    { id: 1, title: 'Pilih Metode' },
+    { id: 2, title: 'Bayar' },
+    { id: 3, title: 'Tiket' },
   ];
 
   const renderStepIndicator = () => (
@@ -187,7 +192,7 @@ const Payment1 = ({route}) => {
               <Text
                 style={[
                   styles.stepNumberText,
-                  {color: step.id <= activeStep ? 'white' : '#6b7280'},
+                  { color: step.id <= activeStep ? 'white' : '#6b7280' },
                 ]}>
                 {step.id}
               </Text>
@@ -198,7 +203,7 @@ const Payment1 = ({route}) => {
             <View
               style={[
                 styles.stepLine,
-                {backgroundColor: step.id < activeStep ? '#22c55e' : '#e5e7eb'},
+                { backgroundColor: step.id < activeStep ? '#22c55e' : '#e5e7eb' },
               ]}
             />
           )}
@@ -225,9 +230,9 @@ const Payment1 = ({route}) => {
       <ScrollView style={styles.content}>
         {/* Car Details */}
         <View style={styles.carDetails}>
-          <Image source={{uri: cars.data.img}} style={styles.carImage} />
+          <Image source={{ uri: cars.data?.img }} style={styles.carImage} />
           <View style={styles.carInfo}>
-            <Text style={styles.carName}>{cars.data.name}</Text>
+            <Text style={styles.carName}>{cars.data?.name}</Text>
             <View style={styles.carMetrics}>
               <View style={styles.metric}>
                 <Icon name="users" size={16} color="#6b7280" />
@@ -239,7 +244,7 @@ const Payment1 = ({route}) => {
               </View>
             </View>
           </View>
-          <Text style={styles.price}>{formatIDR(cars.data.price)}</Text>
+          <Text style={styles.price}>{formatIDR(cars.data?.price)}</Text>
         </View>
         <View style={styles.datePickerContainer}>
           <Text style={styles.sectionTitle}>Select Dates</Text>
@@ -289,11 +294,17 @@ const Payment1 = ({route}) => {
             <Picker
               selectedValue={isDriver}
               onValueChange={itemValue => setIsDriver(itemValue)}
+              enabled={!cars.data?.isDriver}
               style={styles.picker}>
               <Picker.Item label="Lepas Kunci" value={false} />
               <Picker.Item label="Dengan Driver" value={true} />
             </Picker>
 
+            {cars.data?.isDriver && (
+              <Text style={styles.disabledMessage}>
+                Maaf, Mobil Ini Sudah Termasuk Driver
+              </Text>
+            )}
           </View>
         </View>
 
@@ -442,6 +453,12 @@ const styles = StyleSheet.create({
   },
   pickerIcon: {
     marginLeft: 8, // Adds space between the picker and the icon
+  },
+
+  disabledMessage: {
+    fontSize: 16,
+    color: '#4a4a4a',
+    marginRight : "15%",
   },
 
   container: {

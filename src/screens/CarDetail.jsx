@@ -55,7 +55,7 @@ const CarDetail = ({route}) => {
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>{cars.data.name}</Text>
+          <Text style={styles.headerTitle}>{cars.data?.name}</Text>
           <View style={styles.headerInfo}>
             <View style={styles.infoItem}>
               <Icon name="users" size={16} color="#6b7280" />
@@ -73,7 +73,7 @@ const CarDetail = ({route}) => {
         {/* Car Image */}
         <View style={styles.imageContainer}>
           <Image
-            source={{uri: cars.data.img}}
+            source={{uri: cars.data?.img}}
             style={styles.carImage}
             resizeMode="contain"
           />
@@ -95,7 +95,7 @@ const CarDetail = ({route}) => {
       {/* Bottom Fixed Section */}
       <View style={styles.bottomSection}>
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>{formatIDR(cars.data.price)}</Text>
+          <Text style={styles.price}>{formatIDR(cars.data?.price)}</Text>
         </View>
         <TouchableOpacity
           style={styles.paymentButton}

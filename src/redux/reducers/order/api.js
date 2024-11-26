@@ -104,3 +104,29 @@ export const updateOrder = createAsyncThunk(
   },
 );
 
+export const payment = createAsyncThunk(
+  'order/payment',
+  async ({id,receipt, token}, {rejectWithValue}) => {
+    try {
+      const response = await apiClient.put(
+        `/order/${id}/payment`,
+        receipt,
+        {
+          headers: {
+            Content: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const data = response.data;
+      return data;
+    } catch (error) {
+      if (error.response.data) {
+        return rejectWithValue(error.response.data.message);
+      } else {
+        return rejectWithValue('Somethink when wrong');
+      }
+    }
+  },
+);
+

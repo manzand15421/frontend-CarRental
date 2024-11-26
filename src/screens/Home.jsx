@@ -63,16 +63,15 @@ function Home() {
 // }
   useFocusEffect((
     React.useCallback(() => {
-      // console.log(cars.message?.page)
-      //  fetchCars()
-      dispatch(getCars(user.token))
+     
+      dispatch(getCars())
         dispatch(resetOrder())
     }, [user.token])
   ))
 
   useFocusEffect (
     React.useCallback(()=> {
-      if (cars.status === 'failed') {
+      if (cars?.message === 'jwt malformed') {
         dispatch(logout())
         dispatch(resetCar())
       setModalVisible(true);
@@ -175,7 +174,12 @@ function Home() {
             price={item.price}
             // onEndReached={fetchCars}
             // onEndReachedThreshold={0.8}
-            onPress={() => navigation.navigate('carDetail', {carId: item.id},dispatch(getCarsDetail({id : item.id , token : user.token})) )}
+            onPress={() =>
+              user.login ? navigation.navigate('carDetail', {carId: item.id},
+                dispatch(getCarsDetail({id : item.id , token : user.token})) )
+                : 
+                navigation.navigate('SignIn')
+            } 
           />
         )}
        
@@ -185,7 +189,8 @@ function Home() {
         <View style={styles.modalBackground}>
             <>
               <Icon size={13} name={'x-circle'} />
-                <Text> {errorMessage} </Text>
+      
+                <Text>{errorMessage}</Text>
              </>
         </View>
       </ModalPopup>

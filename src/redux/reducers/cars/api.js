@@ -4,7 +4,7 @@ import { apiClient } from "../../../config/axios";
 
 export const getCars = createAsyncThunk(
   'user/getCars',
-  async (token,{rejectWithValue}) => {
+  async (rejectWithValue) => {
     try {
       const response = await apiClient.get(
         '/cars',
@@ -12,10 +12,6 @@ export const getCars = createAsyncThunk(
         //   params:{
         //     page: page,
         // },
-          headers: {
-            Content: 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
         },
       );
 

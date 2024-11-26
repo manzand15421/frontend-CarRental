@@ -109,10 +109,15 @@ const CarPage = () => {
             baggage={4}
             price={item.price}
             onPress={() =>
+              user.login ?
               navigation.navigate('carDetail', {
                 carId: item.id,
                 carName: item.name,
               },dispatch(getCarsDetail({id : item.id , token : user.token})))
+              :
+              navigation.navigate('SignIn',)
+              
+
             }
           />
         )}

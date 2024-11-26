@@ -8,6 +8,8 @@ import {GOOGLE_WEB_CLIENT_ID} from '@env';
 import {StyleSheet} from 'react-native';
 import {useDispatch} from 'react-redux';
 import {GoogleLogin} from '../redux/reducers/user';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 GoogleSignin.configure({
   webClientId: GOOGLE_WEB_CLIENT_ID,
@@ -35,6 +37,11 @@ export default function GoogleButton() {
 dispatch(GoogleLogin({idToken}))
 }
 
+useFocusEffect(
+  useCallback(()=> {
+    GoogleSignin.revokeAccess();
+  },[])
+)
 
   return (
     <View>

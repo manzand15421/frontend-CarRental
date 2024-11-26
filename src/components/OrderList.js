@@ -1,10 +1,11 @@
-import { Text, Image, StyleSheet } from "react-native";
+import { Text, Image, StyleSheet,View } from "react-native";
 import React, { useCallback } from "react";
 import Icon from 'react-native-vector-icons/Feather';
 import Button from "./Button";
 import { Row, Col } from "./Grid";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useColorScheme } from "react-native";
+import { Coundown } from "./Coundown";
 
 export default function OrderList({
   onPress,
@@ -16,6 +17,9 @@ export default function OrderList({
   endDate,
   price,
   style,
+  overdue,
+  CancelOrder,
+  ConvertDate,
   disabled, // Add disabled prop
 }) {
   const isDarkMode = useColorScheme() === 'dark';
@@ -43,21 +47,24 @@ export default function OrderList({
       }}
       onPress={disabled ? null : onPress} // Prevent action if disabled
       disabled={disabled} // Pass disabled state to Button component
+      ConvertDate={ConvertDate}
     >
       <Row alignItems={"center"} gap={20}>
         <Col>
           <Image style={styles.img} source={image} />
         </Col>
-
-        <Col>
-          <Text
-            style={{
-              color: isDarkMode ? "#fff" : "#000",
-              ...styles.invoice
-            }}
-          >
-            {invoice}
-          </Text>
+        <Col style={styles.textContainer}>
+          <View style={styles.invoiceRow}>
+            <Text
+              style={{
+                color: isDarkMode ? "#fff" : "#000",
+                ...styles.invoice
+              }}
+            >
+              {invoice}
+            </Text>{status === 'Status : pending' && (
+            <Coundown timerDb={overdue} onFinish={CancelOrder} /> )}
+          </View>
           <Text
             style={{
               color: isDarkMode ? "#fff" : "#000",
@@ -121,5 +128,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
+  },
+  invoiceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // Positions the countdown on the right
+    alignItems: 'flex-start', // Aligns both invoice and countdown at the top
+  },
+  textContainer: {
+    flex: 1, // Ensures that the invoice and countdown are properly aligned
   },
 });

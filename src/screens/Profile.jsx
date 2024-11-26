@@ -8,10 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { getProfile, selectUser, logout, resetState } from '../redux/reducers/user';
 import { resetCar } from '../redux/reducers/cars';
-import {
-  GoogleSignin,
-} from '@react-native-google-signin/google-signin';
-import auth from '@react-native-firebase/auth';
+import { resetOrder } from '../redux/reducers/order';
 
 const ProfileScreen = () => {
 
@@ -20,21 +17,10 @@ const ProfileScreen = () => {
   const dispatch = useDispatch()
 
   const handleLogout = async () => {
-  
-  try {
-    const currentUser = auth().currentUser; // Check if there's a signed-in user
-
-    if (currentUser) {
-      await GoogleSignin.revokeAccess(); // Revoke Google access
-      await auth().signOut(); // Log out from Firebase Auth
+    if(user.login) {
       dispatch(logout());
       dispatch(resetCar());
-      console.log('User logged out successfully');
-    } else {
-      console.log('No user currently signed in');
-    }
-  } catch (e) {
-    console.error('Error during logout: ', e);
+      dispatch(resetOrder());
   }
 };
 

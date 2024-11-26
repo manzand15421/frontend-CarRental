@@ -16,43 +16,29 @@ import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {selectUser} from '../redux/reducers/user';
 import {useSelector, useDispatch} from 'react-redux';
-import {
-  setEndTime,
-  selectEndTime,
-  clearTime,
-} from '../redux/reducers/timer';
-import { getCarsDetail } from '../redux/reducers/cars';
+import {setEndTime, selectEndTime} from '../redux/reducers/timer';
+import {getCarsDetail} from '../redux/reducers/cars';
 import {formatCurrency} from '../utils/formatCurrency';
 import {statusChange, selectOrder} from '../redux/reducers/order';
-import { apiClient } from '../config/axios';
+import {apiClient} from '../config/axios';
+import {Coundown} from '../components/Coundown';
 
 export default function Payment2() {
   const user = useSelector(selectUser);
   const timer = useSelector(selectEndTime);
   const order = useSelector(selectOrder);
-  const [timeNow, setTimeNow] = useState({hours: 0, minutes: 0, seconds: 0});
-  const [timeSet, setTimeSet] = useState({hours: 12, minutes: 0, seconds: 0});
-  const [targetTime, setTargetTime] = useState('');
-  const intervalRef = useRef(null);
   const time = new Date(order.data?.overdue_time);
+  const [targetTime, setTargetTime] = useState('');
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const formatIDR = useCallback(price => formatCurrency.format(price), []);
   const totalPrice = formatIDR(order.data?.total);
-  const [cancel,setCancel] = useState(false)
 
   useFocusEffect(
     React.useCallback(() => {
       if (order.status) dispatch(statusChange());
     }, [order.status]),
   );
-
-  const clearTimer = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
 
   useEffect(() => {
     const adjustedTime = new Date(time.getTime() - 7 * 60 * 60 * 1000);
@@ -71,40 +57,11 @@ export default function Payment2() {
     setTargetTime(formattedTime);
   }, [time]);
 
-  useEffect(() => {
-    if (!timer) {
-      dispatch(setEndTime(time.getTime()));
-    }
-  }, [dispatch, time]);
-
-  const calculateTime = () => {
-    if (!timer) return;
-    const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
-
-    const updateTime = timer - now;
-
-    if (updateTime <= 0) {
-      setTimeNow({hours: 0, minutes: 0, seconds: 0});
-      clearTimer();
-      // dispatch(clearTime());
-      setCancel(true)
-      return;
-    }
-
-    const hours = Math.floor(updateTime / (1000 * 60 * 60));
-    const minutes = Math.floor((updateTime % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((updateTime % (1000 * 60)) / 1000);
-
-    setTimeNow({hours, minutes, seconds});
-  };
-
-  useEffect(() => {
-    if (timer) calculateTime();
-    intervalRef.current = setInterval(() => {
-      calculateTime();
-    }, 1000);
-    return () => clearTimer();
-  }, [timer]);
+  // useEffect(() => {
+  //   if (!timer) {
+  //     dispatch(setEndTime(time.getTime()));
+  //   }
+  // }, [dispatch, time]);
 
   const steps = [
     {id: 1, title: 'Pilih Metode', active: true, completed: true},
@@ -112,30 +69,25 @@ export default function Payment2() {
     {id: 3, title: 'Tiket', active: false, completed: false},
   ];
 
-const CancelOrder = async () => {
-  try {
-    const cancel = await apiClient.put(`/order/${order.data.id}/cancelOrder`,{
-  headers: {
-    Content: 'application/json',
-    Authorization: `Bearer ${user.token}`,
-  },
-})
-if(cancel.status === 200){
-  navigation.navigate('homeTabs' ,{screen:'Daftar Order'})
-}
-  }catch (e) {
-    console.log(e.response.data)
-  }
-}
-
-useFocusEffect(
-  React.useCallback(()=> {
-  
-    if(cancel === true){
-    CancelOrder()
+  const CancelOrder = async () => {
+    try {
+      const cancel = await apiClient.put(
+        `/order/${order.data.id}/cancelOrder`,
+        {
+          headers: {
+            Content: 'application/json',
+            Authorization: `Bearer ${user.token}`,
+          },
+        },
+      );
+      if (cancel.status === 200) {
+        navigation.navigate('homeTabs', {screen: 'Daftar Order'});
+      }
+    } catch (e) {
+      console.log(e.response.data);
     }
-  },[cancel])
-)
+  };
+
   const renderStepIndicator = () => (
     <View style={styles.stepContainer}>
       {steps.map((step, index) => (
@@ -191,7 +143,8 @@ useFocusEffect(
           <Icon name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
         <View>
-          <Text style={styles.headerTitle}>{`Status : ${order.data?.status}`}</Text>
+          <Text
+            style={styles.headerTitle}>{`Status : ${order.data?.status}`}</Text>
           <Text style={styles.orderId}>{order.data?.order_no}x</Text>
         </View>
       </View>
@@ -203,13 +156,7 @@ useFocusEffect(
         {/* Timer */}
         <View style={styles.timerSection}>
           <Text style={styles.timerLabel}>Selesaikan Pembayaran Sebelum</Text>
-          <View style={styles.timerContainer}>
-            <Text style={styles.timerText}>
-              {String(timeNow.hours).padStart(2, '0')}:
-              {String(timeNow.minutes).padStart(2, '0')}:
-              {String(timeNow.seconds).padStart(2, '0')}
-            </Text>
-          </View>
+          <Coundown timerDb={time.getTime()} onFinish={CancelOrder} />
           <Text style={styles.dateText}>{targetTime}</Text>
         </View>
 
@@ -274,23 +221,28 @@ useFocusEffect(
             <TouchableOpacity
               style={styles.confirmButton}
               onPress={() =>
-                navigation.navigate('confirmation', {countdown: timeSet})
+                navigation.navigate('confirmation',{orderId : order.data?.id})
               }>
               <Text style={styles.confirmButtonText}>
                 Konfirmasi Pembayaran
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.orderListButton}  onPress={CancelOrder}>
-              <Text style={styles.orderListButtonText}>
-               Cancel Order
-              </Text>
+            <TouchableOpacity
+              style={styles.orderListButton}
+              onPress={CancelOrder}>
+              <Text style={styles.orderListButtonText}>Cancel Order</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.orderListButton}  
-            onPress={()=> navigation.navigate('payment', dispatch(getCarsDetail({id : order.data.cars.id, token : user.token})))}
-              >
-              <Text style={styles.orderListButtonText}>
-              Update Order
-              </Text>
+            <TouchableOpacity
+              style={styles.orderListButton}
+              onPress={() =>
+                navigation.navigate(
+                  'payment',
+                  dispatch(
+                    getCarsDetail({id: order.data.cars.id, token: user.token}),
+                  ),
+                )
+              }>
+              <Text style={styles.orderListButtonText}>Update Order</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -371,14 +323,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  timerContainer: {
-    marginBottom: 4,
-  },
-  timerText: {
-    fontSize: 16,
-    color: '#ef4444',
-    fontWeight: '600',
-  },
+
   dateText: {
     fontSize: 14,
     color: '#6b7280',

@@ -41,7 +41,10 @@ function SignIn() {
  
   useFocusEffect (
     React.useCallback(()=> {
-      if (user.status === 'success') {
+      if(user.data?.provider === 'google.com') {
+        navigation.navigate('homeTabs', { screen: 'Akun' });
+      } 
+      else if (user.status === 'success') {
         setModalVisible(true);
         setErrorMessage(null);
         setTimeout(() => {
